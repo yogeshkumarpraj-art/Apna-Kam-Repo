@@ -1,3 +1,4 @@
+
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -11,6 +12,7 @@ export interface PostData {
     title: string;
     date: string;
     description: string;
+    content: string; // Raw markdown content
     contentHtml: string;
 }
 
@@ -53,23 +55,27 @@ export function getSortedPostsData(): PostMeta[] {
   });
 }
 
-export async function getPostData(id: string): Promise<PostData> {
+export async function getPostData(id: string, processHtml: boolean = true): Promise<PostData> {
   const fullPath = path.join(postsDirectory, `${id}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
   // Use gray-matter to parse the post metadata section
   const matterResult = matter(fileContents);
 
-  // Use remark to convert markdown into HTML string
-  const processedContent = await remark()
-    .use(html)
-    .process(matterResult.content);
-  const contentHtml = processedContent.toString();
+  let contentHtml = '';
+  if (processHtml) {
+    // Use remark to convert markdown into HTML string
+    const processedContent = await remark()
+      .use(html)
+      .process(matterResult.content);
+    contentHtml = processedContent.toString();
+  }
 
   // Combine the data with the id and contentHtml
   return {
     id,
     contentHtml,
+    content: matterResult.content,
     title: matterResult.data.title,
     date: matterResult.data.date,
     description: matterResult.data.description,

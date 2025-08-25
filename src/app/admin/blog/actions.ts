@@ -42,6 +42,31 @@ export async function createPost(post: PostInput) {
     revalidatePath('/admin/blog');
 }
 
+export async function updatePost(slug: string, post: PostInput) {
+    const { title, description, content } = post;
+    const fullPath = path.join(postsDirectory, `${slug}.md`);
+
+    if (!fs.existsSync(fullPath)) {
+        throw new Error("Post not found");
+    }
+
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
+    const { data } = matter(fileContents); // Keep original date
+
+    const matterResult = matter.stringify(content, {
+        title,
+        description,
+        date: data.date, // Preserve the original post date
+    });
+
+    fs.writeFileSync(fullPath, matterResult);
+
+    revalidatePath('/blog');
+    revalidatePath(`/blog/${slug}`);
+    revalidatePath('/admin/blog');
+}
+
+
 export async function deletePost(slug: string) {
     const fullPath = path.join(postsDirectory, `${slug}.md`);
 

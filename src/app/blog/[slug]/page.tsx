@@ -1,3 +1,4 @@
+
 import { getPostData, getAllPostIds, PostData } from '@/lib/blog';
 import { Header } from '@/components/header';
 import { format } from 'date-fns';
@@ -9,7 +10,7 @@ export async function generateStaticParams() {
 }
 
 async function getPost(slug: string) {
-    const postData = await getPostData(slug);
+    const postData = await getPostData(slug, true);
     return postData;
 }
 

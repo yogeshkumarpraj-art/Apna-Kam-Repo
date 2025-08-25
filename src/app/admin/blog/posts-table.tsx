@@ -96,7 +96,7 @@ export function PostsTable({ initialPosts }: PostsTableProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href={`/admin/blog/edit/${post.id}`} className="w-full">Edit</Link></DropdownMenuItem>
                       <DropdownMenuItem asChild><Link href={`/blog/${post.id}`} className="w-full">View post</Link></DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
