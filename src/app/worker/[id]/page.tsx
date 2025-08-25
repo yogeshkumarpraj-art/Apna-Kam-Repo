@@ -169,6 +169,8 @@ export default function WorkerProfilePage() {
             await createBooking({
                 workerId: worker!.id,
                 customerId: user.uid,
+                workerName: worker!.name,
+                customerName: user.displayName || 'Customer', // Pass customer name
                 bookingDate: bookingDate,
             });
             toast({
