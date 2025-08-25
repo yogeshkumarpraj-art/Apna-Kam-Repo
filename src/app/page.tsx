@@ -197,25 +197,19 @@ export default function HomePage() {
       } else {
         // Fallback to simple client-side filtering if AI returns no results.
         let filteredWorkers = allWorkers;
-        
-        if (pincode) {
-            filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
-        }
-        
         const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
-        if(activeCategories.length > 0){
-             filteredWorkers = filteredWorkers.filter(w => activeCategories.includes(w.category));
-        }
 
-        if (searchQuery) {
-            const lowercasedQuery = searchQuery.toLowerCase();
-            filteredWorkers = filteredWorkers.filter(worker => 
-                worker.name.toLowerCase().includes(lowercasedQuery) ||
-                worker.category.toLowerCase().includes(lowercasedQuery) ||
-                worker.skills.some(skill => skill.toLowerCase().includes(lowercasedQuery)) ||
-                worker.description.toLowerCase().includes(lowercasedQuery)
+        filteredWorkers = allWorkers.filter(worker => {
+            const matchesPincode = !pincode || worker.pincode === pincode;
+            const matchesCategory = activeCategories.length === 0 || activeCategories.includes(worker.category);
+            const matchesQuery = !searchQuery || (
+                worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                worker.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (worker.skills && worker.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))) ||
+                (worker.description && worker.description.toLowerCase().includes(searchQuery.toLowerCase()))
             );
-        }
+            return matchesPincode && matchesCategory && matchesQuery;
+        });
 
         setSearchResults(filteredWorkers);
       }
@@ -404,5 +398,9 @@ export default function HomePage() {
       <Footer />
     </div>
   );
+
+    
+
+    
 
     
