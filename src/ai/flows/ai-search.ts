@@ -12,52 +12,57 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { searchWorkersTool } from '../tools/worker-search';
+import type { Worker } from '@/lib/types';
+
 
 const AiSearchInputSchema = z.object({
-  query: z.string().describe('The search query from the user (e.g., "plumber", "AC repair").'),
+  query: z.string().describe('The search query from the user (e.g., "plumber", "AC repair"). Can be an empty string if using filters.'),
   skillCategories: z.array(z.string()).optional().describe('Optional list of skill categories to filter by.'),
   pincode: z.string().optional().describe('Optional 6-digit pincode to filter by location.'),
 });
 
 export type AiSearchInput = z.infer<typeof AiSearchInputSchema>;
 
-const AiSearchOutputSchema = z.object({
-  results: z.array(
-    z.object({
-      workerId: z.string().describe('The ID of the worker.'),
-      name: z.string().describe('The name of the worker.'),
-      skills: z.array(z.string()).describe('The skills of the worker.'),
-      category: z.string().describe('The category of the worker.'),
-      location: z.string().describe('The location of the worker, which should be a city or area.'),
-      pincode: z.string().optional().describe('The 6-digit postal code of the worker.'),
-      description: z.string().describe('A short description of the worker.'),
-    })
-  ).describe('The search results, an array of worker profiles.'),
-});
+// The output will now be a direct array of Worker objects.
+const AiSearchOutputSchema = z.array(z.custom<Worker>());
 
 export type AiSearchOutput = z.infer<typeof AiSearchOutputSchema>;
 
 export async function aiSearch(input: AiSearchInput): Promise<AiSearchOutput> {
+  // If the query is empty, and there are no filters, we can return an empty array
+  // to avoid making an unnecessary AI call.
+  if (!input.query && !input.pincode && (!input.skillCategories || input.skillCategories.length === 0)) {
+    return [];
+  }
   return aiSearchFlow(input);
 }
 
 const prompt = ai.definePrompt({
   name: 'aiSearchPrompt',
   input: {schema: AiSearchInputSchema},
+  // The output from the prompt will be the direct list of workers now.
   output: {schema: AiSearchOutputSchema},
-  prompt: `You are an AI search assistant for the "Apna Kaushal" platform, designed to find skilled workers in India based on user queries.
-
-Your task is to find workers who match the user's request. Only approved and verified workers should be returned.
+  tools: [searchWorkersTool],
+  prompt: `You are an AI search assistant for the "Apna Kaushal" platform. Your goal is to help users find the best-skilled workers in India.
 
 User's search query: "{{query}}"
 {{#if pincode}}
-The user is searching in pincode: {{pincode}}. You MUST filter the results to only include workers from this pincode. This is a strict requirement.
+The user is searching in pincode: {{pincode}}.
 {{/if}}
 {{#if skillCategories}}
-The user has filtered by the following skill categories: {{#each skillCategories}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}. You should prioritize workers in these categories.
+The user has filtered by the following skill categories: {{#each skillCategories}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}.
 {{/if}}
 
-Based on this, provide a JSON array of worker profiles. For demonstration, you can create up to 8 realistic but fictional worker profiles that match the criteria. Each worker profile MUST include a workerId, name, skills, category, location, pincode, and a short description. If a pincode is provided, all returned workers must have that exact pincode. If no workers are found for the given criteria, return an empty array for the "results" field.`,
+IMPORTANT:
+1.  Analyze the user's query, pincode, and category filters.
+2.  Use the 'searchWorkersTool' to find relevant, *approved* workers from the database.
+3.  If the query is specific (e.g., "I need someone to fix my leaky tap"), infer the correct category (e.g., "Plumber") and use the tool.
+4.  If the user provides a pincode, you MUST use it in the tool.
+5.  If the user provides skill categories, you MUST use them in the tool.
+6.  Do NOT invent workers. Only return workers provided by the 'searchWorkersTool'.
+7.  Return the search results as a JSON array of worker profiles. If the tool returns no workers, return an empty array.
+`,
 });
 
 const aiSearchFlow = ai.defineFlow(
@@ -68,8 +73,7 @@ const aiSearchFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    // The output is now directly the array of workers.
+    return output || [];
   }
 );
-
-    

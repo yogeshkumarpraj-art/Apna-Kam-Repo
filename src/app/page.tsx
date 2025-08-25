@@ -27,35 +27,6 @@ import { translations } from '@/lib/i18n';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const mapAiResultsToWorkers = (aiResults: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
-    if (!aiResults || aiResults.length === 0) return [];
-    
-    // First, let's try to match by pincode if provided, as it's a strong signal.
-    const pincode = aiResults[0]?.pincode;
-    let potentialMatches = allWorkers;
-    if (pincode) {
-        potentialMatches = allWorkers.filter(w => w.pincode === pincode);
-    }
-
-    // Now, create a map of names from the AI results for quick lookup.
-    const aiWorkerNameMap = new Map(aiResults.map(w => [w.name.toLowerCase(), true]));
-
-    const matchedWorkers = potentialMatches.filter(w => aiWorkerNameMap.has(w.name.toLowerCase()));
-    
-    // If we have direct matches, return them.
-    if (matchedWorkers.length > 0) {
-        return matchedWorkers;
-    }
-
-    // If no direct name matches, but we had a pincode, return all workers from that pincode that AI might have been trying to describe.
-    if (pincode && potentialMatches.length > 0) {
-        return potentialMatches;
-    }
-
-    // As a last resort, if no pincode or name match, return an empty array as we can't be confident in the results.
-    return [];
-};
-
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
@@ -123,16 +94,16 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [pincode, setPincode] = useState('');
   const [searchResults, setSearchResults] = useState<Worker[]>([]);
-  const [allWorkers, setAllWorkers] = useState<Worker[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(true); // Start with true to show initial skeleton
   const [selectedCategories, setSelectedCategories] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
 
   useEffect(() => {
-    const fetchWorkers = async () => {
-        setIsLoading(true);
+    // Fetch initial set of all approved workers on page load
+    const fetchInitialWorkers = async () => {
+        setIsSearching(true);
         try {
             const q = query(collection(db, "users"), where("isWorker", "==", true), where("isApproved", "==", true));
             const querySnapshot = await getDocs(q);
@@ -147,7 +118,6 @@ export default function HomePage() {
                     pincode: data.pincode,
                     description: data.description,
                     skills: data.skills,
-                    // Mocking these values for now
                     rating: 4.5,
                     reviews: Math.floor(Math.random() * 100),
                     price: data.price,
@@ -157,7 +127,6 @@ export default function HomePage() {
                     portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
                 });
             });
-            setAllWorkers(workersList);
             setSearchResults(workersList);
         } catch (error) {
             console.error("Error fetching workers:", error);
@@ -167,16 +136,16 @@ export default function HomePage() {
                 variant: "destructive"
             });
         } finally {
-            setIsLoading(false);
+            setIsSearching(false);
         }
     };
-    fetchWorkers();
+    fetchInitialWorkers();
   }, [toast]);
 
 
   const handleSearch = async () => {
-    setIsLoading(true);
-    setSearchResults([]); // Clear previous results
+    setIsSearching(true);
+    setSearchResults([]);
 
     try {
         if (pincode && !/^\d{6}$/.test(pincode)) {
@@ -185,40 +154,20 @@ export default function HomePage() {
                 description: "Please enter a valid 6-digit pincode.",
                 variant: "destructive",
             });
-            setIsLoading(false);
+            setIsSearching(false);
             return;
         }
 
         const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
         
-        // Use AI Search only if there's a text query
-        if (searchQuery) {
-            const input: AiSearchInput = {
-                query: searchQuery,
-                pincode: pincode,
-                skillCategories: activeCategories,
-            };
+        const input: AiSearchInput = {
+            query: searchQuery,
+            pincode: pincode || undefined,
+            skillCategories: activeCategories.length > 0 ? activeCategories : undefined,
+        };
 
-            const response: AiSearchOutput = await aiSearch(input);
-            
-            if (response.results && response.results.length > 0) {
-                const finalResults = mapAiResultsToWorkers(response.results, allWorkers);
-                setSearchResults(finalResults);
-            } else {
-                // If AI returns no results, show empty (as it's the source of truth for query-based search)
-                setSearchResults([]);
-            }
-        } else {
-            // Fallback to simple client-side filtering if no search query is provided
-            let filteredWorkers = allWorkers;
-
-            filteredWorkers = allWorkers.filter(worker => {
-                const matchesPincode = !pincode || worker.pincode === pincode;
-                const matchesCategory = activeCategories.length === 0 || activeCategories.includes(worker.category);
-                return matchesPincode && matchesCategory;
-            });
-            setSearchResults(filteredWorkers);
-        }
+        const response = await aiSearch(input);
+        setSearchResults(response);
 
     } catch (error) {
         console.error("Search failed:", error);
@@ -227,10 +176,9 @@ export default function HomePage() {
             description: "An error occurred during the search. Please try again.",
             variant: "destructive",
         });
-        // In case of error, show all workers. You might want to show a filtered list based on non-AI criteria.
-        setSearchResults(allWorkers);
+        setSearchResults([]);
     } finally {
-        setIsLoading(false);
+        setIsSearching(false);
     }
   };
 
@@ -295,8 +243,8 @@ export default function HomePage() {
                             />
                         </div>
                         <div className='flex gap-2'>
-                            <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isLoading}>
-                                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                            <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isSearching}>
+                                {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                                 <span className="hidden sm:inline ml-2">{t.search}</span>
                             </Button>
                             <DropdownMenu>
@@ -356,7 +304,7 @@ export default function HomePage() {
               <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
                 {t.featuredWorkers}
               </h2>
-              {isLoading ? (
+              {isSearching ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="flex flex-col space-y-3">
