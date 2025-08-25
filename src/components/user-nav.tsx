@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,13 +16,28 @@ import {
 import { CreditCard, Heart, LogOut, Settings, Shield, User } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
+import { doc, getDoc } from 'firebase/firestore';
 
 export function UserNav() {
   const { user } = useAuth();
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().isAdmin === true) {
+          setIsAdmin(true);
+        }
+      }
+    };
+    checkAdminStatus();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -79,12 +95,14 @@ export function UserNav() {
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-          <Link href="/admin">
-            <DropdownMenuItem>
-                <Shield className="mr-2 h-4 w-4" />
-                <span>Admin Panel</span>
-            </DropdownMenuItem>
-          </Link>
+          {isAdmin && (
+            <Link href="/admin">
+                <DropdownMenuItem>
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                </DropdownMenuItem>
+            </Link>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
