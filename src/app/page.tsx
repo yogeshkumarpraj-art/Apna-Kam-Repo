@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,20 +24,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/context/language-context';
 import { translations } from '@/lib/i18n';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-const mockWorkers: Worker[] = [
-    { id: '1', name: 'Ramesh Kumar', category: 'Electrician', location: 'Mumbai', pincode: '400001', rating: 4.5, reviews: 120, price: 500, priceType: 'daily', skills: ['Wiring', 'Fixture Installation', 'Repairs'], description: 'Experienced electrician with over 10 years in the field. Reliable and efficient.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "electrical work"}] },
-    { id: '2', name: 'Sita Sharma', category: 'Plumber', location: 'Delhi', pincode: '110001', rating: 4.8, reviews: 85, price: 700, priceType: 'job', skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'], description: 'Certified plumber providing top-notch services for residential and commercial properties.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "plumbing work"}]},
-    { id: '3', name: 'Anil Yadav', category: 'Carpenter', location: 'Bangalore', pincode: '560001', rating: 4.2, reviews: 95, price: 600, priceType: 'daily', skills: ['Furniture Making', 'Polishing', 'Custom Designs'], description: 'Skilled carpenter creating custom furniture and providing repair services.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "woodwork"}] },
-    { id: '4', name: 'Priya Singh', category: 'Painter', location: 'Kolkata', pincode: '700001', rating: 4.9, reviews: 200, price: 450, priceType: 'daily', skills: ['Interior Painting', 'Exterior Painting', 'Wall Texturing'], description: 'Professional painter who brings life to your walls with a perfect finish.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "painting walls"}]},
-    { id: '5', name: 'Vikram Rathod', category: 'AC Technician', location: 'Chennai', pincode: '600001', rating: 4.7, reviews: 150, price: 800, priceType: 'job', skills: ['AC Installation', 'Repair & Service', 'Gas Refilling'], description: 'Expert AC technician ensuring your comfort during the hot summers.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "air conditioner"}]},
-    { id: '6', name: 'Deepa Verma', category: 'Home Cleaning', location: 'Pune', pincode: '411001', rating: 4.6, reviews: 180, price: 1000, priceType: 'job', skills: ['Deep Cleaning', 'Kitchen Cleaning', 'Bathroom Cleaning'], description: 'Thorough and diligent cleaning services for a sparkling clean home.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "clean home"}]},
-];
-
-const mapAiResultsToWorkers = (results: AiSearchOutput['results']): Worker[] => {
+const mapAiResultsToWorkers = (results: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
     // This is a mock mapping. In a real app, you'd have a database to fetch full worker details.
     return results.map((res, i) => {
-        const mockBase = mockWorkers[i % mockWorkers.length];
+        const mockBase = allWorkers[i % allWorkers.length];
         return {
             id: res.workerId,
             name: res.name,
@@ -45,13 +39,13 @@ const mapAiResultsToWorkers = (results: AiSearchOutput['results']): Worker[] => 
             pincode: res.pincode,
             description: res.description,
             skills: res.skills,
-            rating: mockBase.rating,
-            reviews: mockBase.reviews,
-            price: mockBase.price,
-            priceType: mockBase.priceType,
-            isFavorite: mockBase.isFavorite,
-            avatar: mockBase.avatar,
-            portfolio: mockBase.portfolio,
+            rating: mockBase?.rating || 4.5,
+            reviews: mockBase?.reviews || 0,
+            price: mockBase?.price || 500,
+            priceType: mockBase?.priceType || 'job',
+            isFavorite: mockBase?.isFavorite || false,
+            avatar: mockBase?.avatar || `https://placehold.co/100x100.png`,
+            portfolio: mockBase?.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
         };
     });
 };
@@ -123,11 +117,56 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [pincode, setPincode] = useState('');
   const [searchResults, setSearchResults] = useState<Worker[]>([]);
+  const [allWorkers, setAllWorkers] = useState<Worker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
+
+  useEffect(() => {
+    const fetchWorkers = async () => {
+        setIsLoading(true);
+        try {
+            const q = query(collection(db, "users"), where("isWorker", "==", true));
+            const querySnapshot = await getDocs(q);
+            const workersList: Worker[] = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                workersList.push({
+                    id: doc.id,
+                    name: data.name,
+                    category: data.category,
+                    location: data.location,
+                    pincode: data.pincode,
+                    description: data.description,
+                    skills: data.skills,
+                    // Mocking these values for now
+                    rating: 4.5,
+                    reviews: Math.floor(Math.random() * 100),
+                    price: data.price,
+                    priceType: data.priceType,
+                    isFavorite: false,
+                    avatar: data.avatar || "https://placehold.co/100x100.png",
+                    portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
+                });
+            });
+            setAllWorkers(workersList);
+            setSearchResults(workersList);
+        } catch (error) {
+            console.error("Error fetching workers:", error);
+            toast({
+                title: "Failed to load workers",
+                description: "Could not fetch worker data from the database.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchWorkers();
+  }, [toast]);
+
 
   const handleSearch = async () => {
     setIsLoading(true);
@@ -151,30 +190,32 @@ export default function HomePage() {
       const response: AiSearchOutput = await aiSearch(input);
 
       if (response.results.length > 0) {
-          const workers = mapAiResultsToWorkers(response.results);
+          const workers = mapAiResultsToWorkers(response.results, allWorkers);
           setSearchResults(workers);
       } else {
-          const pincodeFiltered = pincode ? mockWorkers.filter(w => w.pincode === pincode) : mockWorkers;
-          setSearchResults(pincodeFiltered);
+          // If AI search fails or returns nothing, filter from all real workers
+          let filteredWorkers = allWorkers;
+          if (pincode) {
+              filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
+          }
+          if(Object.values(selectedCategories).some(v => v)){
+               filteredWorkers = filteredWorkers.filter(w => selectedCategories[w.category]);
+          }
+          setSearchResults(filteredWorkers);
       }
 
     } catch (error) {
       console.error("AI Search failed:", error);
       toast({
           title: "Search Failed",
-          description: "An error occurred during the search. Please try again.",
+          description: "An error occurred during the search. Showing all available workers.",
           variant: "destructive",
       });
-      setSearchResults(mockWorkers);
+      setSearchResults(allWorkers);
     } finally {
         setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    setSearchResults(mockWorkers);
-    setIsLoading(false);
-  }, []);
 
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => ({...prev, [category]: !prev[category]}));
@@ -312,7 +353,7 @@ export default function HomePage() {
               </div>
               ) : searchResults.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {searchResults.slice(0, 4).map((worker) => (
+                  {searchResults.slice(0, 8).map((worker) => (
                       <WorkerCard key={worker.id} worker={worker} />
                   ))}
                   </div>
