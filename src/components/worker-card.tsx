@@ -1,3 +1,6 @@
+
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
@@ -5,6 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Star, MapPin, Heart } from 'lucide-react';
 import type { Worker } from '@/lib/types';
 import { Button } from './ui/button';
+import { useAuth } from '@/context/auth-context';
+import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface WorkerCardProps {
   worker: Worker;
@@ -24,6 +33,64 @@ const getPriceSuffix = (priceType: Worker['priceType']) => {
 }
 
 export function WorkerCard({ worker }: WorkerCardProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isFavorite, setIsFavorite] = useState(worker.isFavorite);
+
+  useEffect(() => {
+    // This effect ensures the favorite status is updated if the user's favorites list changes elsewhere.
+    const checkFavoriteStatus = async () => {
+        if (!user) {
+            setIsFavorite(false);
+            return;
+        };
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const favorites = userData.favorites || [];
+            setIsFavorite(favorites.includes(worker.id));
+        }
+    };
+    checkFavoriteStatus();
+  }, [user, worker.id]);
+  
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to worker page
+    e.stopPropagation();
+
+    if (!user) {
+        toast({
+            title: "Please log in",
+            description: "You need to be logged in to add favorites.",
+            variant: "destructive"
+        });
+        router.push('/login');
+        return;
+    }
+
+    const userDocRef = doc(db, "users", user.uid);
+    
+    try {
+        if (isFavorite) {
+            await updateDoc(userDocRef, {
+                favorites: arrayRemove(worker.id)
+            });
+            toast({ title: "Removed from favorites." });
+        } else {
+            await updateDoc(userDocRef, {
+                favorites: arrayUnion(worker.id)
+            }, { merge: true });
+            toast({ title: "Added to favorites!" });
+        }
+        setIsFavorite(!isFavorite); // Optimistically update UI
+    } catch (error) {
+        console.error("Error updating favorites:", error);
+        toast({ title: "Error", description: "Could not update favorites.", variant: "destructive" });
+    }
+  };
+
   return (
     <Link href={`/worker/${worker.id}`} className="block group [perspective:1000px]">
       <Card className="overflow-hidden transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 h-full flex flex-col group-hover:-translate-y-2 group-hover:[transform:rotateX(4deg)]">
@@ -38,14 +105,11 @@ export function WorkerCard({ worker }: WorkerCardProps) {
           />
           <Button
             size="icon"
-            variant={worker.isFavorite ? 'destructive' : 'secondary'}
+            variant={isFavorite ? 'destructive' : 'secondary'}
             className="absolute top-2 right-2 h-8 w-8 rounded-full"
-            onClick={(e) => {
-              e.preventDefault();
-              // Handle favorite toggle logic here
-            }}
+            onClick={handleToggleFavorite}
           >
-            <Heart className={`h-4 w-4 ${worker.isFavorite ? 'fill-current' : ''}`} />
+            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
             <span className="sr-only">Favorite</span>
           </Button>
         </div>

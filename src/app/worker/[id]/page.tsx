@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -22,10 +23,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 const mockReviews: Review[] = [
     { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
@@ -34,9 +37,15 @@ const mockReviews: Review[] = [
 
 export default function WorkerProfilePage() {
     const params = useParams();
+    const router = useRouter();
+    const { user } = useAuth();
+    const { toast } = useToast();
+
     const [worker, setWorker] = useState<Worker | null>(null);
     const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
+    
     const { id } = params;
 
     useEffect(() => {
@@ -44,13 +53,13 @@ export default function WorkerProfilePage() {
             if (!id) return;
             setLoading(true);
             try {
-                const docRef = doc(db, "users", id as string);
-                const docSnap = await getDoc(docRef);
+                const workerDocRef = doc(db, "users", id as string);
+                const workerDocSnap = await getDoc(workerDocRef);
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+                if (workerDocSnap.exists()) {
+                    const data = workerDocSnap.data();
                     setWorker({
-                        id: docSnap.id,
+                        id: workerDocSnap.id,
                         name: data.name,
                         category: data.category,
                         location: data.location,
@@ -61,14 +70,20 @@ export default function WorkerProfilePage() {
                         priceType: data.priceType,
                         avatar: data.avatar || "https://placehold.co/100x100.png",
                         portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
-                        // Mocking these values for now
-                        rating: 4.5,
-                        reviews: Math.floor(Math.random() * 100),
-                        isFavorite: false,
+                        rating: 4.5, // Mock
+                        reviews: Math.floor(Math.random() * 100), // Mock
+                        isFavorite: false, // Will be updated below
                         contact: { phone: "+91 9876543210", email: `${data.name.split(' ')[0].toLowerCase()}@example.com`},
                     });
-                } else {
-                    console.log("No such document!");
+                }
+
+                if (user) {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        setIsFavorite(userData.favorites?.includes(id as string));
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching worker: ", error);
@@ -78,7 +93,7 @@ export default function WorkerProfilePage() {
         };
 
         fetchWorker();
-    }, [id]);
+    }, [id, user]);
 
 
     const handleRevealContact = () => {
@@ -92,6 +107,38 @@ export default function WorkerProfilePage() {
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
     }
+
+    const handleToggleFavorite = async () => {
+        if (!user) {
+            toast({
+                title: "Please log in",
+                description: "You need to be logged in to add favorites.",
+                variant: "destructive"
+            });
+            router.push('/login');
+            return;
+        }
+
+        const userDocRef = doc(db, "users", user.uid);
+        
+        try {
+            if (isFavorite) {
+                await updateDoc(userDocRef, {
+                    favorites: arrayRemove(id)
+                });
+                toast({ title: "Removed from favorites." });
+            } else {
+                await updateDoc(userDocRef, {
+                    favorites: arrayUnion(id)
+                }, { merge: true });
+                toast({ title: "Added to favorites!" });
+            }
+            setIsFavorite(!isFavorite);
+        } catch (error) {
+            console.error("Error updating favorites:", error);
+            toast({ title: "Error", description: "Could not update favorites.", variant: "destructive" });
+        }
+    };
 
     if (loading) {
         return (
@@ -232,8 +279,8 @@ export default function WorkerProfilePage() {
                                 <Button variant="default" className="w-full mt-2"><CalendarIcon className="mr-2 h-4 w-4" /> Request Booking</Button>
                                 
                                 <div className="grid grid-cols-2 gap-2 text-center mt-6 text-sm text-muted-foreground">
-                                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1">
-                                        <Heart className="mr-2 h-4 w-4" /> Add to Favorites
+                                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1" onClick={handleToggleFavorite}>
+                                        <Heart className={`mr-2 h-4 w-4 ${isFavorite ? 'fill-destructive text-destructive' : ''}`} /> {isFavorite ? 'Favorited' : 'Add to Favorites'}
                                     </Button>
                                      <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1" onClick={handleWhatsAppShare}>
                                         <Share2 className="mr-2 h-4 w-4" /> Share
