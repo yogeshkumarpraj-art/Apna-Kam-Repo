@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, getDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, getDoc, doc, Timestamp } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
 
 interface CreateBookingInput {
@@ -33,7 +33,7 @@ export async function createBooking(input: CreateBookingInput) {
             customerId,
             workerName: workerDoc.data().name,
             customerName: customerDoc.data().name,
-            bookingDate: bookingDate, // The fix is here
+            bookingDate: Timestamp.fromDate(new Date(bookingDate)),
             status: 'pending', // Initial status
             createdAt: serverTimestamp(),
         });
