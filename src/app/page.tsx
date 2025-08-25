@@ -27,7 +27,20 @@ const mockWorkers: Worker[] = [
     { id: '6', name: 'Deepa Verma', category: 'Home Cleaning', location: 'Pune', rating: 4.6, reviews: 180, price: 1000, priceType: 'job', skills: ['Deep Cleaning', 'Kitchen Cleaning', 'Bathroom Cleaning'], description: 'Thorough and diligent cleaning services for a sparkling clean home.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "clean home"}]},
 ];
 
-const skillCategories = ['Electrician', 'Plumber', 'Carpenter', 'Painter', 'AC Technician', 'Home Cleaning'];
+const skillCategories = [
+  // Construction & Hard Labour
+  'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter',
+  // Electronics & Repair
+  'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair',
+  // Home & Personal Services
+  'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service',
+  // Events & Logistics
+  'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic',
+  // Cleaning & Maintenance
+  'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)',
+  // Fabrication & Machinery
+  'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
+];
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
