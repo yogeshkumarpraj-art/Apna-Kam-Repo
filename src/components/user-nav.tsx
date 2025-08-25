@@ -21,22 +21,31 @@ import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { doc, getDoc } from 'firebase/firestore';
 
+interface UserProfile {
+    isAdmin: boolean;
+    isWorker: boolean;
+}
+
 export function UserNav() {
   const { user } = useAuth();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [profile, setProfile] = useState<UserProfile>({ isAdmin: false, isWorker: false });
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const fetchUserProfile = async () => {
       if (user) {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().isAdmin === true) {
-          setIsAdmin(true);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setProfile({
+            isAdmin: data.isAdmin === true,
+            isWorker: data.isWorker === true,
+          });
         }
       }
     };
-    checkAdminStatus();
+    fetchUserProfile();
   }, [user]);
 
   const handleLogout = async () => {
@@ -85,17 +94,19 @@ export function UserNav() {
               <span>Favorites</span>
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Billing</span>
-          </DropdownMenuItem>
+          {!profile.isWorker && (
+            <DropdownMenuItem>
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>Billing</span>
+            </DropdownMenuItem>
+          )}
           <Link href="/profile/edit">
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-          {isAdmin && (
+          {profile.isAdmin && (
             <Link href="/admin">
                 <DropdownMenuItem>
                     <Shield className="mr-2 h-4 w-4" />
