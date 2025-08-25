@@ -248,7 +248,7 @@ export default function ProfileEditPage() {
                                 <Label htmlFor="description">Describe your experience & skills</Label>
                                 <Textarea id="description" placeholder="e.g., I am a certified plumber with 5 years of experience in residential and commercial projects..." value={workerDetails} onChange={(e) => setWorkerDetails(e.target.value)} rows={4}/>
                             </div>
-                            <Button onClick={handleSkillSuggestion} disabled={isLoading}>
+                            <Button onClick={handleSkillSuggestion} disabled={isLoading || !workerDetails}>
                                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                 Suggest Skills with AI
                             </Button>
