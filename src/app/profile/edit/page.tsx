@@ -11,6 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { suggestSkills } from '@/ai/flows/skill-suggestion';
 import { Loader2, Plus, Sparkles, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const skillCategories = [
+    'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
+];
 
 export default function ProfileEditPage() {
     const [workerDetails, setWorkerDetails] = useState('');
@@ -80,6 +85,19 @@ export default function ProfileEditPage() {
 
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Professional Details (for Workers)</h3>
+                             <div className="space-y-2">
+                                <Label htmlFor="category">Skill Category</Label>
+                                <Select defaultValue="Plumber (Nalband)">
+                                    <SelectTrigger id="category">
+                                        <SelectValue placeholder="Select your primary skill" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {skillCategories.map(category => (
+                                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description">Describe your experience & skills</Label>
                                 <Textarea id="description" placeholder="e.g., I am a certified plumber with 5 years of experience in residential and commercial projects..." value={workerDetails} onChange={(e) => setWorkerDetails(e.target.value)} rows={4}/>
