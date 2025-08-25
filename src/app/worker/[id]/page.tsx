@@ -73,7 +73,7 @@ export default function WorkerProfilePage() {
                         rating: 4.5, // Mock
                         reviews: Math.floor(Math.random() * 100), // Mock
                         isFavorite: false, // Will be updated below
-                        contact: { phone: "+91 9876543210", email: `${data.name.split(' ')[0].toLowerCase()}@example.com`},
+                        contact: { phone: data.phone, email: data.email },
                     });
                 }
 
