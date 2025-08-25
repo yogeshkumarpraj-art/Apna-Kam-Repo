@@ -12,6 +12,8 @@ import { suggestSkills } from '@/ai/flows/skill-suggestion';
 import { Loader2, Plus, Sparkles, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import type { Worker } from '@/lib/types';
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
@@ -23,6 +25,8 @@ export default function ProfileEditPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [currentSkills, setCurrentSkills] = useState(['Leak Repair', 'Pipe Fitting']);
     const [newSkill, setNewSkill] = useState('');
+    const [priceType, setPriceType] = useState<Worker['priceType']>('job');
+
 
     const handleSkillSuggestion = async () => {
         if (!workerDetails) return;
@@ -97,6 +101,33 @@ export default function ProfileEditPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="price">Base Price (₹)</Label>
+                                    <Input id="price" type="number" placeholder="e.g., 500" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Price Type</Label>
+                                    <RadioGroup
+                                        defaultValue={priceType}
+                                        onValueChange={(value: Worker['priceType']) => setPriceType(value)}
+                                        className="flex items-center space-x-4 pt-2"
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="job" id="r-job" />
+                                            <Label htmlFor="r-job">Per Job</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="daily" id="r-daily" />
+                                            <Label htmlFor="r-daily">Per Day</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="sqft" id="r-sqft" />
+                                            <Label htmlFor="r-sqft">Per Sq.Ft.</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="description">Describe your experience & skills</Label>

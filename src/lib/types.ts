@@ -7,7 +7,7 @@ export interface Worker {
   rating: number;
   reviews: number;
   price: number;
-  priceType: 'daily' | 'job';
+  priceType: 'daily' | 'job' | 'sqft';
   skills: string[];
   description: string;
   isFavorite: boolean;

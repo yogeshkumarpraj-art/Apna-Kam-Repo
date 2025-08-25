@@ -10,6 +10,19 @@ interface WorkerCardProps {
   worker: Worker;
 }
 
+const getPriceSuffix = (priceType: Worker['priceType']) => {
+    switch (priceType) {
+        case 'daily':
+            return '/day';
+        case 'job':
+            return '/job';
+        case 'sqft':
+            return '/sq.ft.';
+        default:
+            return '';
+    }
+}
+
 export function WorkerCard({ worker }: WorkerCardProps) {
   return (
     <Link href={`/worker/${worker.id}`} className="block group">
@@ -58,7 +71,7 @@ export function WorkerCard({ worker }: WorkerCardProps) {
           <div className="mt-4 text-right flex-1 flex items-end justify-end">
             <p className="text-lg font-bold text-foreground">
               ₹{worker.price}
-              <span className="text-sm font-normal text-muted-foreground">/{worker.priceType === 'daily' ? 'day' : 'job'}</span>
+              <span className="text-sm font-normal text-muted-foreground">{getPriceSuffix(worker.priceType)}</span>
             </p>
           </div>
         </CardContent>

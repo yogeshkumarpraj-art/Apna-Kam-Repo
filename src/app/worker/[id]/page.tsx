@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,12 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
         // Here you would implement the payment flow
         setContactRevealed(true);
     };
+
+    const handleWhatsAppShare = () => {
+        const text = `Check out this skilled worker on Apna Kaushal: ${mockWorker.name} - ${window.location.href}`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
 
     return (
         <div className="bg-background min-h-screen">
@@ -148,14 +154,19 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
 
                                 <Button variant="default" className="w-full mt-2"><CalendarIcon className="mr-2 h-4 w-4" /> Request Booking</Button>
                                 
-                                <div className="flex justify-between items-center mt-6 text-sm text-muted-foreground">
-                                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary">
+                                <div className="grid grid-cols-2 gap-2 text-center mt-6 text-sm text-muted-foreground">
+                                    <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1">
                                         <Heart className="mr-2 h-4 w-4" /> Add to Favorites
                                     </Button>
-                                    <Button variant="ghost" className="p-0 h-auto text-destructive hover:bg-transparent hover:text-destructive/80">
-                                        <Flag className="mr-2 h-4 w-4" /> Report
+                                     <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1" onClick={handleWhatsAppShare}>
+                                        <Share2 className="mr-2 h-4 w-4" /> Share
                                     </Button>
                                 </div>
+                                 <div className="text-center mt-4">
+                                     <Button variant="ghost" className="p-0 h-auto text-destructive hover:bg-transparent hover:text-destructive/80 text-xs">
+                                        <Flag className="mr-2 h-4 w-4" /> Report Profile
+                                    </Button>
+                                 </div>
                             </CardContent>
                         </Card>
                     </aside>
