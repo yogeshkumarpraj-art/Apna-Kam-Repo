@@ -30,25 +30,30 @@ import { db } from '@/lib/firebase';
 const mapAiResultsToWorkers = (aiResults: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
     if (!aiResults || aiResults.length === 0) return [];
     
-    const aiWorkerMap = new Map(aiResults.map(w => [w.name.toLowerCase(), w]));
+    // First, let's try to match by pincode if provided, as it's a strong signal.
+    const pincode = aiResults[0]?.pincode;
+    let potentialMatches = allWorkers;
+    if (pincode) {
+        potentialMatches = allWorkers.filter(w => w.pincode === pincode);
+    }
 
-    // First, try to find perfect matches by name
-    const matchedWorkers = allWorkers.filter(w => aiWorkerMap.has(w.name.toLowerCase()));
+    // Now, create a map of names from the AI results for quick lookup.
+    const aiWorkerNameMap = new Map(aiResults.map(w => [w.name.toLowerCase(), true]));
+
+    const matchedWorkers = potentialMatches.filter(w => aiWorkerNameMap.has(w.name.toLowerCase()));
     
-    // If we have enough matches, return them. Otherwise, do a broader search.
-    // This handles cases where AI might return slightly different names for real workers.
+    // If we have direct matches, return them.
     if (matchedWorkers.length > 0) {
         return matchedWorkers;
     }
 
-    // Fallback: Check if any part of the name, category, or skills from real workers is in the AI results.
-    // This is a bit fuzzy but can catch variations.
-    return allWorkers.filter(realWorker => {
-        return aiResults.some(aiWorker => 
-            realWorker.name.toLowerCase().includes(aiWorker.name.toLowerCase()) ||
-            aiWorker.skills.some(s => realWorker.skills.join(' ').toLowerCase().includes(s.toLowerCase()))
-        );
-    });
+    // If no direct name matches, but we had a pincode, return all workers from that pincode that AI might have been trying to describe.
+    if (pincode && potentialMatches.length > 0) {
+        return potentialMatches;
+    }
+
+    // As a last resort, if no pincode or name match, return an empty array as we can't be confident in the results.
+    return [];
 };
 
 const skillCategories = [
@@ -171,58 +176,59 @@ export default function HomePage() {
 
   const handleSearch = async () => {
     setIsLoading(true);
+    setSearchResults([]); // Clear previous results
+
     try {
-      if (pincode && !/^\d{6}$/.test(pincode)) {
-          toast({
-              title: "Invalid Pincode",
-              description: "Please enter a valid 6-digit pincode.",
-              variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-      }
+        if (pincode && !/^\d{6}$/.test(pincode)) {
+            toast({
+                title: "Invalid Pincode",
+                description: "Please enter a valid 6-digit pincode.",
+                variant: "destructive",
+            });
+            setIsLoading(false);
+            return;
+        }
 
-      const input: AiSearchInput = {
-        query: searchQuery || 'any worker',
-        pincode: pincode,
-        skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
-      };
-
-      const response: AiSearchOutput = await aiSearch(input);
-      
-      if (response.results && response.results.length > 0) {
-        // If AI returns results, map them to our real workers.
-        const finalResults = mapAiResultsToWorkers(response.results, allWorkers);
-        setSearchResults(finalResults);
-      } else {
-        // Fallback to simple client-side filtering if AI returns no results.
-        let filteredWorkers = allWorkers;
         const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
+        
+        // Use AI Search only if there's a text query
+        if (searchQuery) {
+            const input: AiSearchInput = {
+                query: searchQuery,
+                pincode: pincode,
+                skillCategories: activeCategories,
+            };
 
-        filteredWorkers = allWorkers.filter(worker => {
-            const matchesPincode = !pincode || worker.pincode === pincode;
-            const matchesCategory = activeCategories.length === 0 || activeCategories.includes(worker.category);
-            const matchesQuery = !searchQuery || (
-                worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                worker.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (worker.skills && worker.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()))) ||
-                (worker.description && worker.description.toLowerCase().includes(searchQuery.toLowerCase()))
-            );
-            return matchesPincode && matchesCategory && matchesQuery;
-        });
+            const response: AiSearchOutput = await aiSearch(input);
+            
+            if (response.results && response.results.length > 0) {
+                const finalResults = mapAiResultsToWorkers(response.results, allWorkers);
+                setSearchResults(finalResults);
+            } else {
+                // If AI returns no results, show empty (as it's the source of truth for query-based search)
+                setSearchResults([]);
+            }
+        } else {
+            // Fallback to simple client-side filtering if no search query is provided
+            let filteredWorkers = allWorkers;
 
-        setSearchResults(filteredWorkers);
-      }
+            filteredWorkers = allWorkers.filter(worker => {
+                const matchesPincode = !pincode || worker.pincode === pincode;
+                const matchesCategory = activeCategories.length === 0 || activeCategories.includes(worker.category);
+                return matchesPincode && matchesCategory;
+            });
+            setSearchResults(filteredWorkers);
+        }
 
     } catch (error) {
-      console.error("AI Search failed:", error);
-      toast({
-          title: "Search Failed",
-          description: "An error occurred during the search. Please try again.",
-          variant: "destructive",
-      });
-      // In case of error, show all workers. You might want to show a filtered list based on non-AI criteria.
-      setSearchResults(allWorkers);
+        console.error("Search failed:", error);
+        toast({
+            title: "Search Failed",
+            description: "An error occurred during the search. Please try again.",
+            variant: "destructive",
+        });
+        // In case of error, show all workers. You might want to show a filtered list based on non-AI criteria.
+        setSearchResults(allWorkers);
     } finally {
         setIsLoading(false);
     }
@@ -398,6 +404,8 @@ export default function HomePage() {
       <Footer />
     </div>
   );
+
+    
 
     
 
