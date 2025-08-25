@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Loader2, CheckCircle } from "lucide-react"
+import { MoreHorizontal, Loader2, CheckCircle, XCircle } from "lucide-react"
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from '@/hooks/use-toast';
@@ -62,17 +62,18 @@ export default function UsersPage() {
     fetchUsers();
   }, [toast]);
 
-  const handleApproveWorker = async (userId: string) => {
+  const handleToggleApproval = async (userId: string, currentStatus: boolean) => {
     const userRef = doc(db, "users", userId);
+    const newStatus = !currentStatus;
     try {
         await updateDoc(userRef, {
-            isApproved: true
+            isApproved: newStatus
         });
-        setUsers(users.map(user => user.id === userId ? { ...user, isApproved: true } : user));
-        toast({ title: "Success", description: "Worker has been approved." });
+        setUsers(users.map(user => user.id === userId ? { ...user, isApproved: newStatus } : user));
+        toast({ title: "Success", description: `Worker has been ${newStatus ? 'approved' : 'unapproved'}.` });
     } catch (error) {
-        console.error("Error approving worker: ", error);
-        toast({ title: "Error", description: "Failed to approve worker.", variant: "destructive" });
+        console.error("Error updating worker status: ", error);
+        toast({ title: "Error", description: "Failed to update worker status.", variant: "destructive" });
     }
   }
 
@@ -141,11 +142,18 @@ export default function UsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem>View profile</DropdownMenuItem>
-                            {user.role === 'Worker' && !user.isApproved && (
-                                <DropdownMenuItem onClick={() => handleApproveWorker(user.id)}>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Approve Worker
-                                </DropdownMenuItem>
+                            {user.role === 'Worker' && (
+                                user.isApproved ? (
+                                    <DropdownMenuItem onClick={() => handleToggleApproval(user.id, user.isApproved!)}>
+                                        <XCircle className="mr-2 h-4 w-4" />
+                                        Revoke Approval
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <DropdownMenuItem onClick={() => handleToggleApproval(user.id, user.isApproved || false)}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Approve Worker
+                                    </DropdownMenuItem>
+                                )
                             )}
                             <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">Delete user</DropdownMenuItem>
                         </DropdownMenuContent>
