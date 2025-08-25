@@ -1,3 +1,4 @@
+
 // This file uses server-side code.
 'use server';
 
@@ -46,7 +47,7 @@ const prompt = ai.definePrompt({
   output: {schema: AiSearchOutputSchema},
   prompt: `You are an AI search assistant for the "Apna Kaushal" platform, designed to find skilled workers in India based on user queries.
 
-Your task is to find workers who match the user's request.
+Your task is to find workers who match the user's request. Only approved and verified workers should be returned.
 
 User's search query: "{{query}}"
 {{#if pincode}}
@@ -70,3 +71,5 @@ const aiSearchFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

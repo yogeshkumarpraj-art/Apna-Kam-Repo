@@ -134,7 +134,7 @@ export default function HomePage() {
     const fetchWorkers = async () => {
         setIsLoading(true);
         try {
-            const q = query(collection(db, "users"), where("isWorker", "==", true));
+            const q = query(collection(db, "users"), where("isWorker", "==", true), where("isApproved", "==", true));
             const querySnapshot = await getDocs(q);
             const workersList: Worker[] = [];
             querySnapshot.forEach((doc) => {
@@ -404,6 +404,8 @@ export default function HomePage() {
       <Footer />
     </div>
   );
+
+    
 
     
 
