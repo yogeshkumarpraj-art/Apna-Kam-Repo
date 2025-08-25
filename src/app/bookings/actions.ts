@@ -10,7 +10,7 @@ interface CreateBookingInput {
     customerId: string;
     workerName: string;
     customerName: string;
-    bookingDate: Date;
+    bookingDate: string; // Receive date as a string
 }
 
 export async function createBooking(input: CreateBookingInput) {
@@ -26,7 +26,7 @@ export async function createBooking(input: CreateBookingInput) {
             customerId,
             workerName,
             customerName,
-            bookingDate: Timestamp.fromDate(new Date(bookingDate)),
+            bookingDate: Timestamp.fromDate(new Date(bookingDate)), // Convert string to Date, then to Timestamp
             status: 'pending', // Initial status
             createdAt: serverTimestamp(),
         });

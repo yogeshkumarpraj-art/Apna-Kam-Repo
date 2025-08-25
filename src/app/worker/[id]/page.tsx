@@ -171,7 +171,7 @@ export default function WorkerProfilePage() {
                 customerId: user.uid,
                 workerName: worker!.name,
                 customerName: user.displayName || 'Customer', // Pass customer name
-                bookingDate: bookingDate,
+                bookingDate: bookingDate.toISOString(),
             });
             toast({
                 title: "Booking Request Sent!",
