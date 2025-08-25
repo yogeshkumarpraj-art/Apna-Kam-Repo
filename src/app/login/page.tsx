@@ -25,7 +25,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // This will run only once on the client
+    // This will run only once on the client, ensuring window object is available.
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
       'size': 'invisible',
       'callback': (response: any) => {
