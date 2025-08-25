@@ -29,25 +29,8 @@ import { db } from '@/lib/firebase';
 
 const mapAiResultsToWorkers = (results: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
     // This is a mock mapping. In a real app, you'd have a database to fetch full worker details.
-    return results.map((res, i) => {
-        const mockBase = allWorkers[i % allWorkers.length];
-        return {
-            id: res.workerId,
-            name: res.name,
-            category: res.category,
-            location: res.location,
-            pincode: res.pincode,
-            description: res.description,
-            skills: res.skills,
-            rating: mockBase?.rating || 4.5,
-            reviews: mockBase?.reviews || 0,
-            price: mockBase?.price || 500,
-            priceType: mockBase?.priceType || 'job',
-            isFavorite: mockBase?.isFavorite || false,
-            avatar: mockBase?.avatar || `https://placehold.co/100x100.png`,
-            portfolio: mockBase?.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
-        };
-    });
+    const resultIds = new Set(results.map(r => r.workerId));
+    return allWorkers.filter(w => resultIds.has(w.id));
 };
 
 const skillCategories = [
@@ -187,30 +170,46 @@ export default function HomePage() {
         skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
       };
 
+      // Let AI generate a list of potential results (fictional for now, but based on query)
       const response: AiSearchOutput = await aiSearch(input);
+      
+      // Fallback and filtering logic
+      let filteredWorkers = allWorkers;
 
       if (response.results.length > 0) {
-          const workers = mapAiResultsToWorkers(response.results, allWorkers);
-          setSearchResults(workers);
-      } else {
-          // If AI search fails or returns nothing, filter from all real workers
-          let filteredWorkers = allWorkers;
-          if (pincode) {
-              filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
-          }
-          if(Object.values(selectedCategories).some(v => v)){
-               filteredWorkers = filteredWorkers.filter(w => selectedCategories[w.category]);
-          }
-          setSearchResults(filteredWorkers);
+        // If AI gives results, we can use its understanding to better filter our real data.
+        // For now, we'll just use the text-based filtering as a fallback.
       }
+      
+      if (pincode) {
+          filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
+      }
+      
+      const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
+      if(activeCategories.length > 0){
+           filteredWorkers = filteredWorkers.filter(w => activeCategories.includes(w.category));
+      }
+
+      if (searchQuery) {
+          const lowercasedQuery = searchQuery.toLowerCase();
+          filteredWorkers = filteredWorkers.filter(worker => 
+              worker.name.toLowerCase().includes(lowercasedQuery) ||
+              worker.category.toLowerCase().includes(lowercasedQuery) ||
+              worker.skills.some(skill => skill.toLowerCase().includes(lowercasedQuery)) ||
+              worker.description.toLowerCase().includes(lowercasedQuery)
+          );
+      }
+
+      setSearchResults(filteredWorkers);
 
     } catch (error) {
       console.error("AI Search failed:", error);
       toast({
           title: "Search Failed",
-          description: "An error occurred during the search. Showing all available workers.",
+          description: "An error occurred during the search. Please try again.",
           variant: "destructive",
       });
+      // In case of error, show all workers. You might want to show a filtered list based on non-AI criteria.
       setSearchResults(allWorkers);
     } finally {
         setIsLoading(false);
@@ -387,4 +386,5 @@ export default function HomePage() {
       <Footer />
     </div>
   );
-}
+
+    
