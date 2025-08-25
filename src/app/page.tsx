@@ -61,7 +61,7 @@ const skillCategories = [
 ];
 
 const HowItWorksStep = ({ num, title, description }: { num: number, title: string, description: string }) => (
-    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
         <CardContent className="p-0">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
                 {num}
@@ -296,7 +296,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-slate-50 py-16">
+        <section className="bg-slate-50 dark:bg-slate-900 py-16">
             <div className="container mx-auto px-4">
                  <div className="text-center max-w-2xl mx-auto">
                     <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-headline">
