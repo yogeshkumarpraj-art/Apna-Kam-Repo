@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,18 +15,35 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Worker } from '@/lib/types';
+import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
+
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
 
 export default function ProfileEditPage() {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+
     const [workerDetails, setWorkerDetails] = useState('');
     const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [currentSkills, setCurrentSkills] = useState(['Leak Repair', 'Pipe Fitting']);
     const [newSkill, setNewSkill] = useState('');
     const [priceType, setPriceType] = useState<Worker['priceType']>('job');
+
+    useEffect(() => {
+        if (user) {
+            setName(user.displayName || '');
+            setEmail(user.email || '');
+            setPhone(user.phoneNumber || '');
+        }
+    }, [user]);
 
 
     const handleSkillSuggestion = async () => {
@@ -64,6 +82,25 @@ export default function ProfileEditPage() {
         setCurrentSkills(currentSkills.filter(skill => skill !== skillToRemove));
     };
 
+    const handleSaveChanges = () => {
+        // TODO: Implement saving to Firestore database
+        toast({
+            title: 'Profile Updated',
+            description: 'Your changes have been saved locally, but database connection is needed.',
+        });
+    }
+
+    if (!user) {
+        return (
+            <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+                    <p>Please log in to edit your profile.</p>
+                </main>
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Header />
@@ -77,9 +114,18 @@ export default function ProfileEditPage() {
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold">Personal Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2"><Label htmlFor="name">Full Name</Label><Input id="name" defaultValue="Test User" /></div>
-                                <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="user@example.com" /></div>
-                                <div className="space-y-2"><Label htmlFor="phone">Phone</Label><Input id="phone" type="tel" defaultValue="+91 9999988888" /></div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Full Name</Label>
+                                    <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Phone</Label>
+                                    <Input id="phone" type="tel" value={phone} disabled />
+                                </div>
                                 <div className="space-y-2"><Label htmlFor="location">Location</Label><Input id="location" defaultValue="Delhi, India" /></div>
                                 <div className="space-y-2"><Label htmlFor="pincode">Pincode</Label><Input id="pincode" defaultValue="110001" /></div>
                             </div>
@@ -175,7 +221,7 @@ export default function ProfileEditPage() {
 
                         <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline">Cancel</Button>
-                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90">Save Changes</Button>
+                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges}>Save Changes</Button>
                         </div>
                     </CardContent>
                 </Card>

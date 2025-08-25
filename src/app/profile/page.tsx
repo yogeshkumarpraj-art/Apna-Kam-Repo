@@ -1,3 +1,6 @@
+
+'use client';
+
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -6,23 +9,41 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, MapPin, Pencil, Phone } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/auth-context";
 
-const user = {
-    name: 'Test User',
-    email: 'user@example.com',
-    phone: '+91 9999988888',
+// This is now mock data for a worker profile, which we will fetch from a database later.
+const mockWorkerProfile = {
+    category: 'Plumber',
+    skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'],
+    description: 'Certified plumber providing top-notch services for residential and commercial properties.',
     location: 'Delhi, India',
     pincode: '110001',
-    avatar: 'https://placehold.co/100x100.png',
     isWorker: true,
-    workerProfile: {
-        category: 'Plumber',
-        skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'],
-        description: 'Certified plumber providing top-notch services for residential and commercial properties.'
-    }
 }
 
 export default function ProfilePage() {
+    const { user } = useAuth();
+
+    if (!user) {
+        return (
+             <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+                    <p>Please <Link href="/login" className="text-primary hover:underline">log in</Link> to view your profile.</p>
+                </main>
+            </div>
+        )
+    }
+
+    // In a real app, you would fetch this from your database based on the user's ID.
+    const userProfile = {
+        name: user.displayName || "User",
+        email: user.email || 'No email provided',
+        phone: user.phoneNumber || 'No phone number',
+        avatar: user.photoURL || 'https://placehold.co/100x100.png',
+        ...mockWorkerProfile // Merging mock worker data for now
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Header />
@@ -32,13 +53,13 @@ export default function ProfilePage() {
                         <div className="flex justify-between items-start flex-wrap gap-4">
                             <div className="flex items-center gap-6">
                                 <Avatar className="h-24 w-24 border-2 border-primary">
-                                    <AvatarImage src={user.avatar} alt={user.name} data-ai-hint="person"/>
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={userProfile.avatar} alt={userProfile.name} data-ai-hint="person"/>
+                                    <AvatarFallback>{userProfile.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <CardTitle className="text-3xl font-headline">{user.name}</CardTitle>
+                                    <CardTitle className="text-3xl font-headline">{userProfile.name}</CardTitle>
                                     <CardDescription className="text-base mt-1">
-                                        {user.isWorker ? user.workerProfile.category : 'Customer'}
+                                        {userProfile.isWorker ? userProfile.category : 'Customer'}
                                     </CardDescription>
                                 </div>
                             </div>
@@ -54,26 +75,26 @@ export default function ProfilePage() {
                             <h3 className="text-lg font-semibold mb-3">Contact Information</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-muted-foreground">
                                 <div className="flex items-center gap-3">
-                                    <Mail className="w-5 h-5 text-primary" /> <span>{user.email}</span>
+                                    <Mail className="w-5 h-5 text-primary" /> <span>{userProfile.email}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Phone className="w-5 h-5 text-primary" /> <span>{user.phone}</span>
+                                    <Phone className="w-5 h-5 text-primary" /> <span>{userProfile.phone}</span>
                                 </div>
                                 <div className="flex items-center gap-3 col-span-full">
-                                    <MapPin className="w-5 h-5 text-primary" /> <span>{user.location}, {user.pincode}</span>
+                                    <MapPin className="w-5 h-5 text-primary" /> <span>{userProfile.location}, {userProfile.pincode}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {user.isWorker && user.workerProfile && (
+                        {userProfile.isWorker && (
                             <>
                                 <Separator />
                                 <div>
                                     <h3 className="text-lg font-semibold mb-3">Professional Details</h3>
-                                    <p className="text-muted-foreground mb-4">{user.workerProfile.description}</p>
+                                    <p className="text-muted-foreground mb-4">{userProfile.description}</p>
                                     <h4 className="font-semibold mb-3">Skills</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {user.workerProfile.skills.map(skill => (
+                                        {userProfile.skills.map(skill => (
                                             <Badge key={skill} variant="default">{skill}</Badge>
                                         ))}
                                     </div>
