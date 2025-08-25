@@ -11,15 +11,43 @@ import Link from "next/link";
 import { createPost } from '@/app/admin/blog/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
+import { generateBlogPost } from '@/ai/flows/generate-blog-post';
 
 export default function NewPostPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [content, setContent] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  const handleGenerateContent = async () => {
+    if (!title || !description) {
+      toast({
+        title: "Title and Description needed",
+        description: "Please fill out the title and description to generate content with AI.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const result = await generateBlogPost({ title, shortDescription: description });
+      setContent(result.blogPostContent);
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "AI Generation Failed",
+        description: "Could not generate blog content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
 
   const handlePublish = async () => {
     if (!title || !description || !content) {
@@ -79,10 +107,25 @@ export default function NewPostPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="content">Content (Markdown)</Label>
+           <div className="flex justify-between items-center">
+             <Label htmlFor="content">Content (Markdown)</Label>
+             <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleGenerateContent} 
+              disabled={isGenerating || !title || !description}
+            >
+               {isGenerating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Generate with AI
+            </Button>
+           </div>
           <Textarea 
             id="content" 
-            placeholder="Write your blog post content here. You can use Markdown for formatting."
+            placeholder="Write your blog post content here, or generate it with AI."
             rows={15}
             className="font-code"
             value={content}
