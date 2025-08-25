@@ -50,7 +50,7 @@ Your task is to find workers who match the user's request.
 
 User's search query: "{{query}}"
 {{#if pincode}}
-The user is searching in pincode: {{pincode}}. You MUST filter the results to only include workers from this pincode.
+The user is searching in pincode: {{pincode}}. You MUST filter the results to only include workers from this pincode. This is a strict requirement.
 {{/if}}
 {{#if skillCategories}}
 The user has filtered by the following skill categories: {{#each skillCategories}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}. You should prioritize workers in these categories.
