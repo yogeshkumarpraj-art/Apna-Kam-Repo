@@ -11,9 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useLanguage } from "@/context/language-context"
+import { translations } from "@/lib/i18n"
 
 export function Header() {
   const { setTheme } = useTheme()
+  const { language, setLanguage } = useLanguage();
+  const t = translations[language];
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -29,7 +34,7 @@ export function Header() {
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center space-x-2">
             <Button variant="ghost" asChild>
-                <Link href="/profile/edit">For Workers</Link>
+                <Link href="/profile/edit">{t.forWorkers}</Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -39,8 +44,8 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>English</DropdownMenuItem>
-                <DropdownMenuItem>हिन्दी</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('en')}>English</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('hi')}>हिन्दी</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
              <DropdownMenu>
