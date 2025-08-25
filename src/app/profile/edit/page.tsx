@@ -72,6 +72,7 @@ export default function ProfileEditPage() {
                                 <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="user@example.com" /></div>
                                 <div className="space-y-2"><Label htmlFor="phone">Phone</Label><Input id="phone" type="tel" defaultValue="+91 9999988888" /></div>
                                 <div className="space-y-2"><Label htmlFor="location">Location</Label><Input id="location" defaultValue="Delhi, India" /></div>
+                                <div className="space-y-2"><Label htmlFor="pincode">Pincode</Label><Input id="pincode" defaultValue="110001" /></div>
                             </div>
                         </div>
 

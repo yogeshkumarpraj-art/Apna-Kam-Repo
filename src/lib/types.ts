@@ -3,6 +3,7 @@ export interface Worker {
   name: string;
   category: string;
   location: string;
+  pincode?: string;
   rating: number;
   reviews: number;
   price: number;

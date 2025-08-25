@@ -12,6 +12,7 @@ const user = {
     email: 'user@example.com',
     phone: '+91 9999988888',
     location: 'Delhi, India',
+    pincode: '110001',
     avatar: 'https://placehold.co/100x100.png',
     isWorker: true,
     workerProfile: {
@@ -59,7 +60,7 @@ export default function ProfilePage() {
                                     <Phone className="w-5 h-5 text-primary" /> <span>{user.phone}</span>
                                 </div>
                                 <div className="flex items-center gap-3 col-span-full">
-                                    <MapPin className="w-5 h-5 text-primary" /> <span>{user.location}</span>
+                                    <MapPin className="w-5 h-5 text-primary" /> <span>{user.location}, {user.pincode}</span>
                                 </div>
                             </div>
                         </div>
