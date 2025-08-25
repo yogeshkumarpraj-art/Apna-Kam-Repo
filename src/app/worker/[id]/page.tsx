@@ -25,23 +25,26 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 const mockReviews: Review[] = [
     { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
     { id: '2', author: 'Sunita Rao', avatar: 'https://placehold.co/100x100.png', rating: 4, comment: 'Good work, but was a bit late. Overall satisfied with the service.', date: '1 month ago' }
 ]
 
-export default function WorkerProfilePage({ params }: { params: { id: string } }) {
+export default function WorkerProfilePage() {
+    const params = useParams();
     const [worker, setWorker] = useState<Worker | null>(null);
     const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
+    const { id } = params;
 
     useEffect(() => {
         const fetchWorker = async () => {
-            if (!params.id) return;
+            if (!id) return;
             setLoading(true);
             try {
-                const docRef = doc(db, "users", params.id);
+                const docRef = doc(db, "users", id as string);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -75,7 +78,7 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
         };
 
         fetchWorker();
-    }, [params.id]);
+    }, [id]);
 
 
     const handleRevealContact = () => {
