@@ -33,7 +33,7 @@ export async function createBooking(input: CreateBookingInput) {
             customerId,
             workerName: workerDoc.data().name,
             customerName: customerDoc.data().name,
-            bookingDate: serverTimestamp.fromDate(bookingDate),
+            bookingDate: bookingDate, // The fix is here
             status: 'pending', // Initial status
             createdAt: serverTimestamp(),
         });
@@ -41,6 +41,7 @@ export async function createBooking(input: CreateBookingInput) {
         // Revalidate the worker's page, although this won't show bookings yet.
         // It's good practice for when we do show booking info.
         revalidatePath(`/worker/${workerId}`);
+        revalidatePath('/my-bookings');
 
     } catch (error) {
         console.error("Error creating booking:", error);
