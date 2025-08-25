@@ -190,7 +190,7 @@ export default function HomePage() {
         <section className="relative py-20 sm:py-28 text-white">
             <div className="absolute inset-0">
                 <Image 
-                    src="https://placehold.co/1300x800.png"
+                    src="https://images.unsplash.com/photo-1618005199693-5b2a305b4a9a?w=1200&q=80"
                     alt="Hero background"
                     fill
                     className="object-cover"

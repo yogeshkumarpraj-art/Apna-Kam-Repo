@@ -1,7 +1,13 @@
 import Link from "next/link"
-import { Sprout } from "lucide-react"
+import { Sprout, Globe, Sun, Moon } from "lucide-react"
 import { UserNav } from "@/components/user-nav"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   return (
@@ -15,10 +21,27 @@ export function Header() {
             </span>
           </Link>
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center space-x-2">
             <Button variant="ghost" asChild>
                 <Link href="/profile/edit">For Workers</Link>
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Globe className="h-[1.2rem] w-[1.2rem]" />
+                  <span className="sr-only">Select language</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>English</DropdownMenuItem>
+                <DropdownMenuItem>हिन्दी</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+             <Button variant="ghost" size="icon">
+                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
             </Button>
             <UserNav />
           </nav>
