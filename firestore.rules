@@ -1,17 +1,17 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Allow logged-in users to read from the users collection, but only write to their own document.
+    // Allow public read access for fetching worker/user profiles.
+    // Restrict write access to the user themselves.
     match /users/{userId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth.uid == userId;
     }
 
     // Allow logged-in users to create, read, and write bookings.
-    // In a production app, you'd make these rules more granular (e.g., a user can only read/write their own bookings).
+    // Further rules can be added to restrict updates/deletes to involved parties.
     match /bookings/{bookingId} {
       allow read, write: if request.auth != null;
     }
