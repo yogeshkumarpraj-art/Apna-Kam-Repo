@@ -15,17 +15,41 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
-import { aiSearch, type AiSearchInput } from '@/ai/flows/ai-search';
+import { aiSearch, type AiSearchInput, type AiSearchOutput } from '@/ai/flows/ai-search';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const mockWorkers: Worker[] = [
-    { id: '1', name: 'Ramesh Kumar', category: 'Electrician', location: 'Mumbai', rating: 4.5, reviews: 120, price: 500, priceType: 'daily', skills: ['Wiring', 'Fixture Installation', 'Repairs'], description: 'Experienced electrician with over 10 years in the field. Reliable and efficient.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "electrical work"}] },
-    { id: '2', name: 'Sita Sharma', category: 'Plumber', location: 'Delhi', rating: 4.8, reviews: 85, price: 700, priceType: 'job', skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'], description: 'Certified plumber providing top-notch services for residential and commercial properties.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "plumbing work"}]},
-    { id: '3', name: 'Anil Yadav', category: 'Carpenter', location: 'Bangalore', rating: 4.2, reviews: 95, price: 600, priceType: 'daily', skills: ['Furniture Making', 'Polishing', 'Custom Designs'], description: 'Skilled carpenter creating custom furniture and providing repair services.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "woodwork"}] },
-    { id: '4', name: 'Priya Singh', category: 'Painter', location: 'Kolkata', rating: 4.9, reviews: 200, price: 450, priceType: 'daily', skills: ['Interior Painting', 'Exterior Painting', 'Wall Texturing'], description: 'Professional painter who brings life to your walls with a perfect finish.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "painting walls"}]},
-    { id: '5', name: 'Vikram Rathod', category: 'AC Technician', location: 'Chennai', rating: 4.7, reviews: 150, price: 800, priceType: 'job', skills: ['AC Installation', 'Repair & Service', 'Gas Refilling'], description: 'Expert AC technician ensuring your comfort during the hot summers.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "air conditioner"}]},
-    { id: '6', name: 'Deepa Verma', category: 'Home Cleaning', location: 'Pune', rating: 4.6, reviews: 180, price: 1000, priceType: 'job', skills: ['Deep Cleaning', 'Kitchen Cleaning', 'Bathroom Cleaning'], description: 'Thorough and diligent cleaning services for a sparkling clean home.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "clean home"}]},
+    { id: '1', name: 'Ramesh Kumar', category: 'Electrician', location: 'Mumbai', pincode: '400001', rating: 4.5, reviews: 120, price: 500, priceType: 'daily', skills: ['Wiring', 'Fixture Installation', 'Repairs'], description: 'Experienced electrician with over 10 years in the field. Reliable and efficient.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "electrical work"}] },
+    { id: '2', name: 'Sita Sharma', category: 'Plumber', location: 'Delhi', pincode: '110001', rating: 4.8, reviews: 85, price: 700, priceType: 'job', skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'], description: 'Certified plumber providing top-notch services for residential and commercial properties.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "plumbing work"}]},
+    { id: '3', name: 'Anil Yadav', category: 'Carpenter', location: 'Bangalore', pincode: '560001', rating: 4.2, reviews: 95, price: 600, priceType: 'daily', skills: ['Furniture Making', 'Polishing', 'Custom Designs'], description: 'Skilled carpenter creating custom furniture and providing repair services.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "woodwork"}] },
+    { id: '4', name: 'Priya Singh', category: 'Painter', location: 'Kolkata', pincode: '700001', rating: 4.9, reviews: 200, price: 450, priceType: 'daily', skills: ['Interior Painting', 'Exterior Painting', 'Wall Texturing'], description: 'Professional painter who brings life to your walls with a perfect finish.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "painting walls"}]},
+    { id: '5', name: 'Vikram Rathod', category: 'AC Technician', location: 'Chennai', pincode: '600001', rating: 4.7, reviews: 150, price: 800, priceType: 'job', skills: ['AC Installation', 'Repair & Service', 'Gas Refilling'], description: 'Expert AC technician ensuring your comfort during the hot summers.', isFavorite: true, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "air conditioner"}]},
+    { id: '6', name: 'Deepa Verma', category: 'Home Cleaning', location: 'Pune', pincode: '411001', rating: 4.6, reviews: 180, price: 1000, priceType: 'job', skills: ['Deep Cleaning', 'Kitchen Cleaning', 'Bathroom Cleaning'], description: 'Thorough and diligent cleaning services for a sparkling clean home.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "clean home"}]},
 ];
+
+const mapAiResultsToWorkers = (results: AiSearchOutput['results']): Worker[] => {
+    // This is a mock mapping. In a real app, you'd have a database to fetch full worker details.
+    return results.map((res, i) => {
+        const mockBase = mockWorkers[i % mockWorkers.length];
+        return {
+            id: res.workerId,
+            name: res.name,
+            category: res.category,
+            location: res.location,
+            pincode: res.pincode,
+            description: res.description,
+            skills: res.skills,
+            rating: mockBase.rating,
+            reviews: mockBase.reviews,
+            price: mockBase.price,
+            priceType: mockBase.priceType,
+            isFavorite: mockBase.isFavorite,
+            avatar: mockBase.avatar,
+            portfolio: mockBase.portfolio,
+        };
+    });
+};
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
@@ -37,34 +61,59 @@ export default function HomePage() {
   const [searchResults, setSearchResults] = useState<Worker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
 
   const handleSearch = async () => {
     setIsLoading(true);
     try {
-        const input: AiSearchInput = {
-            query: searchQuery,
-            pincode: pincode,
-            skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
-        };
-        // In a real app, the AI output would be mapped to the Worker[] type.
-        // Here we just return the mock data for demonstration.
-        // const response: AiSearchOutput = await aiSearch(input);
-        setTimeout(() => { // Simulate network delay
-            setSearchResults(mockWorkers);
-            setIsLoading(false);
-        }, 1000);
+      if (pincode && !/^\d{6}$/.test(pincode)) {
+          toast({
+              title: "Invalid Pincode",
+              description: "Please enter a valid 6-digit pincode.",
+              variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+      }
+
+      const input: AiSearchInput = {
+        query: searchQuery || 'any worker',
+        pincode: pincode,
+        skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
+      };
+
+      // In a real app, the AI would search a database of workers.
+      // For this demo, we'll simulate that by having the AI filter the mock data.
+      const response: AiSearchOutput = await aiSearch(input);
+
+      if (response.results.length > 0) {
+          const workers = mapAiResultsToWorkers(response.results);
+          setSearchResults(workers);
+      } else {
+          // If AI returns no results, we still show some mock data for demo purposes.
+          // In a real app, you would show a "no results" message.
+          const pincodeFiltered = pincode ? mockWorkers.filter(w => w.pincode === pincode) : mockWorkers;
+          setSearchResults(pincodeFiltered);
+      }
+
     } catch (error) {
-        console.error("AI Search failed:", error);
-        // For demo, fall back to mock data
-        setSearchResults(mockWorkers);
+      console.error("AI Search failed:", error);
+      toast({
+          title: "Search Failed",
+          description: "An error occurred during the search. Please try again.",
+          variant: "destructive",
+      });
+      // For demo, fall back to mock data
+      setSearchResults(mockWorkers);
+    } finally {
         setIsLoading(false);
     }
   };
 
   useEffect(() => {
     // Initial load
-    handleSearch();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSearchResults(mockWorkers);
+    setIsLoading(false);
   }, []);
 
   const toggleCategory = (category: string) => {
@@ -111,8 +160,9 @@ export default function HomePage() {
                   placeholder="Pincode"
                   className="pl-10 h-12 text-base"
                   value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   onKeyDown={handleKeyDown}
+                  maxLength={6}
                 />
               </div>
               <div className='flex gap-2'>
@@ -158,12 +208,17 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : searchResults.length > 0 ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {searchResults.map((worker) => (
                     <WorkerCard key={worker.id} worker={worker} />
                 ))}
                 </div>
+            ) : (
+              <div className="text-center py-20 border-2 border-dashed rounded-lg">
+                  <h2 className="text-xl font-semibold">No Workers Found</h2>
+                  <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>
+              </div>
             )}
           </div>
         </div>

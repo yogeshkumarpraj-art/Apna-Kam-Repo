@@ -13,9 +13,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const AiSearchInputSchema = z.object({
-  query: z.string().describe('The search query from the user.'),
+  query: z.string().describe('The search query from the user (e.g., "plumber", "AC repair").'),
   skillCategories: z.array(z.string()).optional().describe('Optional list of skill categories to filter by.'),
-  pincode: z.string().optional().describe('Optional pincode to filter by location.'),
+  pincode: z.string().optional().describe('Optional 6-digit pincode to filter by location.'),
 });
 
 export type AiSearchInput = z.infer<typeof AiSearchInputSchema>;
@@ -44,17 +44,19 @@ const prompt = ai.definePrompt({
   name: 'aiSearchPrompt',
   input: {schema: AiSearchInputSchema},
   output: {schema: AiSearchOutputSchema},
-  prompt: `You are an AI search assistant designed to find workers based on user queries. 
+  prompt: `You are an AI search assistant for the "Apna Kaushal" platform, designed to find skilled workers in India based on user queries.
 
-Given the following search query: "{{query}}"
+Your task is to find workers who match the user's request.
 
-Return a JSON array of worker profiles that match the search query. Each worker profile should include workerId, name, skills, category, location, pincode, and a short description. 
+User's search query: "{{query}}"
+{{#if pincode}}
+The user is searching in pincode: {{pincode}}. You MUST filter the results to only include workers from this pincode.
+{{/if}}
+{{#if skillCategories}}
+The user has filtered by the following skill categories: {{#each skillCategories}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}. You should prioritize workers in these categories.
+{{/if}}
 
-Consider the following skill categories if provided: {{skillCategories}}
-Consider the following pincode if provided: {{pincode}}
-
-Ensure that the results are relevant to the query and the worker profiles contain the information requested in the correct fields.
-`,
+Based on this, provide a JSON array of worker profiles. For demonstration, you can create up to 8 realistic but fictional worker profiles that match the criteria. Each worker profile MUST include a workerId, name, skills, category, location, pincode, and a short description. If a pincode is provided, all returned workers must have that exact pincode. If no workers are found for the given criteria, return an empty array for the "results" field.`,
 });
 
 const aiSearchFlow = ai.defineFlow(
