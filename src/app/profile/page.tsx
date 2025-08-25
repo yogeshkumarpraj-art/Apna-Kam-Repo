@@ -1,15 +1,18 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Header } from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, MapPin, Pencil, Phone } from "lucide-react";
+import { Mail, MapPin, Pencil, Phone, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/auth-context";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // This is now mock data for a worker profile, which we will fetch from a database later.
 const mockWorkerProfile = {
@@ -21,10 +24,75 @@ const mockWorkerProfile = {
     isWorker: true,
 }
 
+interface UserProfile {
+    name: string;
+    email: string;
+    phone: string;
+    avatar: string;
+    category?: string;
+    skills?: string[];
+    description?: string;
+    location?: string;
+    pincode?: string;
+    isWorker?: boolean;
+}
+
 export default function ProfilePage() {
     const { user } = useAuth();
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    if (!user) {
+    useEffect(() => {
+        if (user) {
+            const fetchProfile = async () => {
+                setLoading(true);
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setUserProfile({
+                        name: data.name || user.displayName || "User",
+                        email: data.email || user.email || 'No email provided',
+                        phone: user.phoneNumber || 'No phone number',
+                        avatar: user.photoURL || 'https://placehold.co/100x100.png',
+                        category: data.category,
+                        skills: data.skills,
+                        description: data.description,
+                        location: data.location,
+                        pincode: data.pincode,
+                        isWorker: data.isWorker,
+                    });
+                } else {
+                     // If no profile in DB, create a basic one from Auth
+                    setUserProfile({
+                        name: user.displayName || "User",
+                        email: user.email || 'No email provided',
+                        phone: user.phoneNumber || 'No phone number',
+                        avatar: user.photoURL || 'https://placehold.co/100x100.png',
+                    });
+                }
+                setLoading(false);
+            };
+
+            fetchProfile();
+        } else {
+            setLoading(false);
+        }
+    }, [user]);
+
+    if (loading) {
+        return (
+             <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </main>
+            </div>
+        )
+    }
+
+    if (!user || !userProfile) {
         return (
              <div className="flex flex-col min-h-screen bg-background">
                 <Header />
@@ -34,15 +102,6 @@ export default function ProfilePage() {
             </div>
         )
     }
-
-    // In a real app, you would fetch this from your database based on the user's ID.
-    const userProfile = {
-        name: user.displayName || "User",
-        email: user.email || 'No email provided',
-        phone: user.phoneNumber || 'No phone number',
-        avatar: user.photoURL || 'https://placehold.co/100x100.png',
-        ...mockWorkerProfile // Merging mock worker data for now
-    };
 
     return (
         <div className="flex flex-col min-h-screen bg-background">
@@ -80,9 +139,11 @@ export default function ProfilePage() {
                                 <div className="flex items-center gap-3">
                                     <Phone className="w-5 h-5 text-primary" /> <span>{userProfile.phone}</span>
                                 </div>
+                                {userProfile.location && (
                                 <div className="flex items-center gap-3 col-span-full">
                                     <MapPin className="w-5 h-5 text-primary" /> <span>{userProfile.location}, {userProfile.pincode}</span>
                                 </div>
+                                )}
                             </div>
                         </div>
 
@@ -94,7 +155,7 @@ export default function ProfilePage() {
                                     <p className="text-muted-foreground mb-4">{userProfile.description}</p>
                                     <h4 className="font-semibold mb-3">Skills</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {userProfile.skills.map(skill => (
+                                        {userProfile.skills?.map(skill => (
                                             <Badge key={skill} variant="default">{skill}</Badge>
                                         ))}
                                     </div>

@@ -17,6 +17,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Worker } from '@/lib/types';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
+import { db } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 
 const skillCategories = [
@@ -26,22 +29,55 @@ const skillCategories = [
 export default function ProfileEditPage() {
     const { user } = useAuth();
     const { toast } = useToast();
+    const router = useRouter();
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+
+    // Form state
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-
+    const [location, setLocation] = useState('');
+    const [pincode, setPincode] = useState('');
+    const [category, setCategory] = useState('');
+    const [price, setPrice] = useState('');
+    const [priceType, setPriceType] = useState<Worker['priceType']>('job');
     const [workerDetails, setWorkerDetails] = useState('');
     const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [currentSkills, setCurrentSkills] = useState(['Leak Repair', 'Pipe Fitting']);
+    const [currentSkills, setCurrentSkills] = useState<string[]>([]);
     const [newSkill, setNewSkill] = useState('');
-    const [priceType, setPriceType] = useState<Worker['priceType']>('job');
 
     useEffect(() => {
         if (user) {
-            setName(user.displayName || '');
-            setEmail(user.email || '');
             setPhone(user.phoneNumber || '');
+            
+            const fetchProfile = async () => {
+                setIsFetching(true);
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setName(data.name || user.displayName || '');
+                    setEmail(data.email || user.email || '');
+                    setLocation(data.location || '');
+                    setPincode(data.pincode || '');
+                    setCategory(data.category || '');
+                    setPrice(data.price || '');
+                    setPriceType(data.priceType || 'job');
+                    setCurrentSkills(data.skills || []);
+                    setWorkerDetails(data.description || '');
+                } else {
+                    // Pre-fill from auth if no profile exists
+                    setName(user.displayName || '');
+                    setEmail(user.email || '');
+                }
+                setIsFetching(false);
+            };
+
+            fetchProfile();
         }
     }, [user]);
 
@@ -56,8 +92,7 @@ export default function ProfileEditPage() {
             setSuggestedSkills(newSuggestions);
         } catch (error) {
             console.error("Skill suggestion failed:", error);
-            // Mock response on failure for demo
-            setSuggestedSkills(['Mock Skill 1', 'Mock Skill 2', 'Mock Skill 3']);
+            toast({ title: "AI Error", description: "Could not suggest skills.", variant: "destructive" });
         } finally {
             setIsLoading(false);
         }
@@ -82,20 +117,53 @@ export default function ProfileEditPage() {
         setCurrentSkills(currentSkills.filter(skill => skill !== skillToRemove));
     };
 
-    const handleSaveChanges = () => {
-        // TODO: Implement saving to Firestore database
-        toast({
-            title: 'Profile Updated',
-            description: 'Your changes have been saved locally, but database connection is needed.',
-        });
+    const handleSaveChanges = async () => {
+        if (!user) {
+            toast({ title: "Not logged in", description: "You must be logged in to save.", variant: "destructive" });
+            return;
+        }
+        setIsSaving(true);
+        try {
+            const userRef = doc(db, "users", user.uid);
+            await setDoc(userRef, {
+                name,
+                email,
+                location,
+                pincode,
+                category,
+                price: Number(price) || 0,
+                priceType,
+                skills: currentSkills,
+                description: workerDetails,
+                uid: user.uid,
+                phone: user.phoneNumber,
+                // Add a flag to identify if user is a worker
+                isWorker: !!category 
+            }, { merge: true });
+
+            toast({
+                title: 'Profile Updated',
+                description: 'Your changes have been successfully saved.',
+            });
+            router.push('/profile');
+        } catch (error) {
+            console.error("Error saving profile: ", error);
+            toast({
+                title: 'Save Failed',
+                description: 'Could not save your profile. Please try again.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsSaving(false);
+        }
     }
 
-    if (!user) {
+    if (isFetching || !user) {
         return (
             <div className="flex flex-col min-h-screen bg-background">
                 <Header />
                 <main className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
-                    <p>Please log in to edit your profile.</p>
+                    {isFetching ? <Loader2 className="h-8 w-8 animate-spin" /> : <p>Please log in to edit your profile.</p>}
                 </main>
             </div>
         )
@@ -126,8 +194,8 @@ export default function ProfileEditPage() {
                                     <Label htmlFor="phone">Phone</Label>
                                     <Input id="phone" type="tel" value={phone} disabled />
                                 </div>
-                                <div className="space-y-2"><Label htmlFor="location">Location</Label><Input id="location" defaultValue="Delhi, India" /></div>
-                                <div className="space-y-2"><Label htmlFor="pincode">Pincode</Label><Input id="pincode" defaultValue="110001" /></div>
+                                <div className="space-y-2"><Label htmlFor="location">Location</Label><Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Delhi, India"/></div>
+                                <div className="space-y-2"><Label htmlFor="pincode">Pincode</Label><Input id="pincode" value={pincode} onChange={e => setPincode(e.target.value)} placeholder="e.g. 110001"/></div>
                             </div>
                         </div>
 
@@ -137,13 +205,14 @@ export default function ProfileEditPage() {
                             <h3 className="text-lg font-semibold">Professional Details (for Workers)</h3>
                              <div className="space-y-2">
                                 <Label htmlFor="category">Skill Category</Label>
-                                <Select defaultValue="Plumber (Nalband)">
+                                <Select value={category} onValueChange={setCategory}>
                                     <SelectTrigger id="category">
                                         <SelectValue placeholder="Select your primary skill" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {skillCategories.map(category => (
-                                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                                        <SelectItem value="">I am a customer (not a worker)</SelectItem>
+                                        {skillCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -151,12 +220,12 @@ export default function ProfileEditPage() {
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label htmlFor="price">Base Price (₹)</Label>
-                                    <Input id="price" type="number" placeholder="e.g., 500" />
+                                    <Input id="price" type="number" placeholder="e.g., 500" value={price} onChange={e => setPrice(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Price Type</Label>
                                     <RadioGroup
-                                        defaultValue={priceType}
+                                        value={priceType}
                                         onValueChange={(value: Worker['priceType']) => setPriceType(value)}
                                         className="flex items-center space-x-4 pt-2"
                                     >
@@ -220,8 +289,11 @@ export default function ProfileEditPage() {
                         </div>
 
                         <div className="flex justify-end gap-2 pt-4">
-                            <Button variant="outline">Cancel</Button>
-                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges}>Save Changes</Button>
+                            <Button variant="outline" onClick={() => router.push('/profile')}>Cancel</Button>
+                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving}>
+                                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Changes
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
