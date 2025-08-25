@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Header } from '@/components/header';
 import type { Worker, Review } from '@/lib/types';
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2 } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,16 +22,61 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
-const mockWorker: Worker = { id: '1', name: 'Ramesh Kumar', category: 'Electrician', location: 'Mumbai', rating: 4.5, reviews: 120, price: 500, priceType: 'daily', skills: ['Wiring', 'Fixture Installation', 'Repairs', 'Circuit Breakers', 'Inspections'], description: 'Experienced electrician with over 10 years in the field. Reliable and efficient. I specialize in both residential and commercial projects, ensuring safety and quality in all my work.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "electrical work"}, {url: "https://placehold.co/600x400.png", hint: "person wiring"}, {url: "https://placehold.co/600x400.png", hint: "electrical panel"}], contact: { phone: "+91 9876543210", email: "ramesh.k@example.com"} };
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import Link from 'next/link';
 
 const mockReviews: Review[] = [
-    { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Ramesh was very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
+    { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
     { id: '2', author: 'Sunita Rao', avatar: 'https://placehold.co/100x100.png', rating: 4, comment: 'Good work, but was a bit late. Overall satisfied with the service.', date: '1 month ago' }
 ]
 
 export default function WorkerProfilePage({ params }: { params: { id: string } }) {
+    const [worker, setWorker] = useState<Worker | null>(null);
+    const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
+
+    useEffect(() => {
+        const fetchWorker = async () => {
+            if (!params.id) return;
+            setLoading(true);
+            try {
+                const docRef = doc(db, "users", params.id);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setWorker({
+                        id: docSnap.id,
+                        name: data.name,
+                        category: data.category,
+                        location: data.location,
+                        pincode: data.pincode,
+                        description: data.description,
+                        skills: data.skills,
+                        price: data.price,
+                        priceType: data.priceType,
+                        avatar: data.avatar || "https://placehold.co/100x100.png",
+                        portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
+                        // Mocking these values for now
+                        rating: 4.5,
+                        reviews: Math.floor(Math.random() * 100),
+                        isFavorite: false,
+                        contact: { phone: "+91 9876543210", email: `${data.name.split(' ')[0].toLowerCase()}@example.com`},
+                    });
+                } else {
+                    console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching worker: ", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchWorker();
+    }, [params.id]);
+
 
     const handleRevealContact = () => {
         // Here you would implement the payment flow
@@ -38,10 +84,38 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
     };
 
     const handleWhatsAppShare = () => {
-        const text = `Check out this skilled worker on Apna Kaushal: ${mockWorker.name} - ${window.location.href}`;
+        if (!worker) return;
+        const text = `Check out this skilled worker on Apna Kaushal: ${worker.name} - ${window.location.href}`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
     }
+
+    if (loading) {
+        return (
+            <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </main>
+            </div>
+        )
+    }
+
+    if (!worker) {
+         return (
+            <div className="flex flex-col min-h-screen bg-background">
+                <Header />
+                <main className="container mx-auto px-4 py-8 flex-1 flex flex-col items-center justify-center text-center">
+                    <h1 className="text-2xl font-bold mb-4">Worker Not Found</h1>
+                    <p className="text-muted-foreground mb-6">The profile you are looking for does not exist.</p>
+                    <Button asChild>
+                        <Link href="/">Back to Home</Link>
+                    </Button>
+                </main>
+            </div>
+        )
+    }
+
 
     return (
         <div className="bg-background min-h-screen">
@@ -53,7 +127,7 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
                         <div>
                             <h2 className="text-2xl font-bold font-headline mb-4">Portfolio</h2>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {mockWorker.portfolio.map((image, index) => (
+                                {worker.portfolio.map((image, index) => (
                                     <div key={index} className="overflow-hidden rounded-lg shadow-md aspect-w-1 aspect-h-1">
                                       <Image src={image.url} alt={`Portfolio image ${index + 1}`} width={400} height={400} className="object-cover w-full h-full" data-ai-hint={image.hint}/>
                                     </div>
@@ -62,14 +136,14 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
                         </div>
 
                         <div>
-                            <h2 className="text-2xl font-bold font-headline mb-4">About {mockWorker.name}</h2>
-                            <p className="text-muted-foreground leading-relaxed">{mockWorker.description}</p>
+                            <h2 className="text-2xl font-bold font-headline mb-4">About {worker.name}</h2>
+                            <p className="text-muted-foreground leading-relaxed">{worker.description}</p>
                         </div>
                         
                         <Separator />
 
                         <div>
-                            <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({mockWorker.reviews})</h2>
+                            <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({worker.reviews})</h2>
                             <div className="space-y-6">
                                 {mockReviews.map(review => (
                                     <div key={review.id} className="flex gap-4">
@@ -101,34 +175,34 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
                             <CardContent className="p-6">
                                 <div className="flex flex-col items-center text-center">
                                     <Avatar className="w-24 h-24 border-4 border-primary ring-4 ring-primary/20">
-                                        <AvatarImage src={mockWorker.avatar} alt={mockWorker.name} data-ai-hint="person portrait" />
-                                        <AvatarFallback>{mockWorker.name.charAt(0)}</AvatarFallback>
+                                        <AvatarImage src={worker.avatar} alt={worker.name} data-ai-hint="person portrait" />
+                                        <AvatarFallback>{worker.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <h1 className="text-2xl font-bold mt-4 font-headline">{mockWorker.name}</h1>
-                                    <p className="text-primary font-semibold">{mockWorker.category}</p>
+                                    <h1 className="text-2xl font-bold mt-4 font-headline">{worker.name}</h1>
+                                    <p className="text-primary font-semibold">{worker.category}</p>
                                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                                         <MapPin className="w-4 h-4" />
-                                        <span>{mockWorker.location}</span>
+                                        <span>{worker.location}</span>
                                     </div>
                                     <div className="flex items-center gap-1 text-sm mt-2">
                                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span className="font-bold">{mockWorker.rating}</span>
-                                        <span className="text-muted-foreground">({mockWorker.reviews} reviews)</span>
+                                        <span className="font-bold">{worker.rating}</span>
+                                        <span className="text-muted-foreground">({worker.reviews} reviews)</span>
                                     </div>
                                 </div>
                                 <Separator className="my-6" />
                                 <div>
                                     <h3 className="font-bold mb-3">Skills</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {mockWorker.skills.map(skill => <Badge key={skill}>{skill}</Badge>)}
+                                        {worker.skills.map(skill => <Badge key={skill}>{skill}</Badge>)}
                                     </div>
                                 </div>
                                 <Separator className="my-6" />
                                 
                                 {contactRevealed ? (
                                     <div className="space-y-2">
-                                        <Button variant="outline" className="w-full justify-start"><Phone className="mr-2 h-4 w-4" /> {mockWorker.contact?.phone}</Button>
-                                        <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {mockWorker.contact?.email}</Button>
+                                        <Button variant="outline" className="w-full justify-start"><Phone className="mr-2 h-4 w-4" /> {worker.contact?.phone}</Button>
+                                        <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {worker.contact?.email}</Button>
                                     </div>
                                 ) : (
                                   <AlertDialog>
@@ -141,7 +215,7 @@ export default function WorkerProfilePage({ params }: { params: { id: string } }
                                       <AlertDialogHeader>
                                         <AlertDialogTitle>Confirm Payment</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          You are about to pay ₹50 to reveal the contact details for {mockWorker.name}. This action is non-refundable.
+                                          You are about to pay ₹50 to reveal the contact details for {worker.name}. This action is non-refundable.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
