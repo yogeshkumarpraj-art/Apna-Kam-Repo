@@ -130,7 +130,7 @@ export default function ProfileEditPage() {
                 email,
                 location,
                 pincode,
-                category,
+                category: category === 'customer' ? '' : category,
                 price: Number(price) || 0,
                 priceType,
                 skills: currentSkills,
@@ -138,7 +138,7 @@ export default function ProfileEditPage() {
                 uid: user.uid,
                 phone: user.phoneNumber,
                 // Add a flag to identify if user is a worker
-                isWorker: !!category 
+                isWorker: category && category !== 'customer',
             }, { merge: true });
 
             toast({
@@ -210,7 +210,7 @@ export default function ProfileEditPage() {
                                         <SelectValue placeholder="Select your primary skill" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">I am a customer (not a worker)</SelectItem>
+                                        <SelectItem value="customer">I am a customer (not a worker)</SelectItem>
                                         {skillCategories.map(cat => (
                                             <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                         ))}
