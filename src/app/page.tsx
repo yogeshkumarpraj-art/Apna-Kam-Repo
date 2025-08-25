@@ -27,10 +27,28 @@ import { translations } from '@/lib/i18n';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const mapAiResultsToWorkers = (results: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
-    // This is a mock mapping. In a real app, you'd have a database to fetch full worker details.
-    const resultIds = new Set(results.map(r => r.workerId));
-    return allWorkers.filter(w => resultIds.has(w.id));
+const mapAiResultsToWorkers = (aiResults: AiSearchOutput['results'], allWorkers: Worker[]): Worker[] => {
+    if (!aiResults || aiResults.length === 0) return [];
+    
+    const aiWorkerMap = new Map(aiResults.map(w => [w.name.toLowerCase(), w]));
+
+    // First, try to find perfect matches by name
+    const matchedWorkers = allWorkers.filter(w => aiWorkerMap.has(w.name.toLowerCase()));
+    
+    // If we have enough matches, return them. Otherwise, do a broader search.
+    // This handles cases where AI might return slightly different names for real workers.
+    if (matchedWorkers.length > 0) {
+        return matchedWorkers;
+    }
+
+    // Fallback: Check if any part of the name, category, or skills from real workers is in the AI results.
+    // This is a bit fuzzy but can catch variations.
+    return allWorkers.filter(realWorker => {
+        return aiResults.some(aiWorker => 
+            realWorker.name.toLowerCase().includes(aiWorker.name.toLowerCase()) ||
+            aiWorker.skills.some(s => realWorker.skills.join(' ').toLowerCase().includes(s.toLowerCase()))
+        );
+    });
 };
 
 const skillCategories = [
@@ -170,37 +188,37 @@ export default function HomePage() {
         skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
       };
 
-      // Let AI generate a list of potential results (fictional for now, but based on query)
       const response: AiSearchOutput = await aiSearch(input);
       
-      // Fallback and filtering logic
-      let filteredWorkers = allWorkers;
+      if (response.results && response.results.length > 0) {
+        // If AI returns results, map them to our real workers.
+        const finalResults = mapAiResultsToWorkers(response.results, allWorkers);
+        setSearchResults(finalResults);
+      } else {
+        // Fallback to simple client-side filtering if AI returns no results.
+        let filteredWorkers = allWorkers;
+        
+        if (pincode) {
+            filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
+        }
+        
+        const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
+        if(activeCategories.length > 0){
+             filteredWorkers = filteredWorkers.filter(w => activeCategories.includes(w.category));
+        }
 
-      if (response.results.length > 0) {
-        // If AI gives results, we can use its understanding to better filter our real data.
-        // For now, we'll just use the text-based filtering as a fallback.
-      }
-      
-      if (pincode) {
-          filteredWorkers = filteredWorkers.filter(w => w.pincode === pincode);
-      }
-      
-      const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
-      if(activeCategories.length > 0){
-           filteredWorkers = filteredWorkers.filter(w => activeCategories.includes(w.category));
-      }
+        if (searchQuery) {
+            const lowercasedQuery = searchQuery.toLowerCase();
+            filteredWorkers = filteredWorkers.filter(worker => 
+                worker.name.toLowerCase().includes(lowercasedQuery) ||
+                worker.category.toLowerCase().includes(lowercasedQuery) ||
+                worker.skills.some(skill => skill.toLowerCase().includes(lowercasedQuery)) ||
+                worker.description.toLowerCase().includes(lowercasedQuery)
+            );
+        }
 
-      if (searchQuery) {
-          const lowercasedQuery = searchQuery.toLowerCase();
-          filteredWorkers = filteredWorkers.filter(worker => 
-              worker.name.toLowerCase().includes(lowercasedQuery) ||
-              worker.category.toLowerCase().includes(lowercasedQuery) ||
-              worker.skills.some(skill => skill.toLowerCase().includes(lowercasedQuery)) ||
-              worker.description.toLowerCase().includes(lowercasedQuery)
-          );
+        setSearchResults(filteredWorkers);
       }
-
-      setSearchResults(filteredWorkers);
 
     } catch (error) {
       console.error("AI Search failed:", error);
