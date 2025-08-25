@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CreditCard, Heart, LogOut, Settings, Shield, User } from "lucide-react"
+import { CreditCard, Heart, LogOut, Settings, Shield, User, Briefcase } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
 import { auth, db } from "@/lib/firebase"
@@ -86,6 +86,12 @@ export function UserNav() {
             <DropdownMenuItem>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
+            </DropdownMenuItem>
+          </Link>
+           <Link href="/my-bookings">
+            <DropdownMenuItem>
+              <Briefcase className="mr-2 h-4 w-4" />
+              <span>My Bookings</span>
             </DropdownMenuItem>
           </Link>
           <Link href="/favorites">

@@ -23,12 +23,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
+import { Calendar } from '@/components/ui/calendar';
+import { createBooking } from '@/app/bookings/actions';
 
 const mockReviews: Review[] = [
     { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
@@ -45,6 +56,9 @@ export default function WorkerProfilePage() {
     const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
+    const [isBooking, setIsBooking] = useState(false);
+    const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
     
     const { id } = params;
 
@@ -139,6 +153,41 @@ export default function WorkerProfilePage() {
             toast({ title: "Error", description: "Could not update favorites.", variant: "destructive" });
         }
     };
+    
+     const handleBookingRequest = async () => {
+        if (!user) {
+            toast({ title: "Please log in", description: "You must be logged in to book a worker.", variant: "destructive" });
+            router.push('/login');
+            return;
+        }
+        if (!bookingDate) {
+            toast({ title: "Select a date", description: "Please select a date for the booking.", variant: "destructive" });
+            return;
+        }
+        setIsBooking(true);
+        try {
+            await createBooking({
+                workerId: worker!.id,
+                customerId: user.uid,
+                bookingDate,
+            });
+            toast({
+                title: "Booking Request Sent!",
+                description: `${worker!.name} has been notified. You will be updated on the status soon.`,
+            });
+            setIsBookingDialogOpen(false); // Close the dialog on success
+        } catch (error) {
+            console.error(error);
+            toast({
+                title: "Booking Failed",
+                description: "Could not send booking request. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsBooking(false);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -276,7 +325,35 @@ export default function WorkerProfilePage() {
                                   </AlertDialog>
                                 )}
 
-                                <Button variant="default" className="w-full mt-2"><CalendarIcon className="mr-2 h-4 w-4" /> Request Booking</Button>
+                                <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="default" className="w-full mt-2"><CalendarIcon className="mr-2 h-4 w-4" /> Request Booking</Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Request a Booking with {worker.name}</DialogTitle>
+                                            <DialogDescription>
+                                                Select a date for the service. The worker will confirm their availability.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="flex justify-center">
+                                            <Calendar
+                                                mode="single"
+                                                selected={bookingDate}
+                                                onSelect={setBookingDate}
+                                                disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                                                className="rounded-md border"
+                                            />
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>Cancel</Button>
+                                            <Button onClick={handleBookingRequest} disabled={isBooking || !bookingDate}>
+                                                {isBooking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                Confirm Booking
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
                                 
                                 <div className="grid grid-cols-2 gap-2 text-center mt-6 text-sm text-muted-foreground">
                                     <Button variant="ghost" className="p-0 h-auto hover:bg-transparent hover:text-primary flex-1" onClick={handleToggleFavorite}>
