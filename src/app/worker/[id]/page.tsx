@@ -169,7 +169,7 @@ export default function WorkerProfilePage() {
             await createBooking({
                 workerId: worker!.id,
                 customerId: user.uid,
-                bookingDate,
+                bookingDate: bookingDate,
             });
             toast({
                 title: "Booking Request Sent!",
