@@ -15,10 +15,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Loader2, CheckCircle, XCircle } from "lucide-react"
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { MoreHorizontal, Loader2, CheckCircle, XCircle, Trash2 } from "lucide-react"
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface User {
   id: string;
@@ -33,6 +43,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -77,6 +89,34 @@ export default function UsersPage() {
     }
   }
 
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user);
+    setIsAlertOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await deleteDoc(doc(db, "users", userToDelete.id));
+      setUsers(users.filter(u => u.id !== userToDelete.id));
+      toast({
+        title: "User Deleted",
+        description: `The user "${userToDelete.name}" has been deleted.`,
+      });
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "Failed to delete the user.",
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAlertOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
+
   const getStatus = (user: User): { text: string; variant: "default" | "secondary" | "destructive" | "outline"; className?: string } => {
       if (user.role !== 'Worker') {
           return { text: 'N/A', variant: 'secondary' };
@@ -89,6 +129,7 @@ export default function UsersPage() {
 
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>User Management</CardTitle>
@@ -155,7 +196,13 @@ export default function UsersPage() {
                                     </DropdownMenuItem>
                                 )
                             )}
-                            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">Delete user</DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                              onClick={() => handleDeleteClick(user)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete user
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>
@@ -167,5 +214,24 @@ export default function UsersPage() {
         )}
       </CardContent>
     </Card>
+
+    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user
+              &quot;{userToDelete?.name}&quot; from the platform records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              Yes, delete user
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
