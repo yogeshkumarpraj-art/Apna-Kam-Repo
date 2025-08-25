@@ -41,3 +41,15 @@ export async function createPost(post: PostInput) {
     revalidatePath(`/blog/${slug}`);
     revalidatePath('/admin/blog');
 }
+
+export async function deletePost(slug: string) {
+    const fullPath = path.join(postsDirectory, `${slug}.md`);
+
+    if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+    }
+
+    revalidatePath('/blog');
+    revalidatePath(`/blog/${slug}`);
+    revalidatePath('/admin/blog');
+}
