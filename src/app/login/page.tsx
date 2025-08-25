@@ -17,7 +17,7 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Welcome to Apna Kaushal
+            Welcome to Apna Kam
           </p>
         </div>
         <Card className="shadow-lg">

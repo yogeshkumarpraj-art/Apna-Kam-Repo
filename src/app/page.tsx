@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +20,7 @@ import {
 import { aiSearch, type AiSearchInput, type AiSearchOutput } from '@/ai/flows/ai-search';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from '@/components/ui/card';
 
 const mockWorkers: Worker[] = [
     { id: '1', name: 'Ramesh Kumar', category: 'Electrician', location: 'Mumbai', pincode: '400001', rating: 4.5, reviews: 120, price: 500, priceType: 'daily', skills: ['Wiring', 'Fixture Installation', 'Repairs'], description: 'Experienced electrician with over 10 years in the field. Reliable and efficient.', isFavorite: false, avatar: "https://placehold.co/100x100.png", portfolio: [{url: "https://placehold.co/600x400.png", hint: "electrical work"}] },
@@ -54,6 +57,60 @@ const mapAiResultsToWorkers = (results: AiSearchOutput['results']): Worker[] => 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
+
+const HowItWorksStep = ({ num, title, description }: { num: number, title: string, description: string }) => (
+    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <CardContent className="p-0">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
+                {num}
+            </div>
+            <h3 className="text-xl font-bold mb-2 font-headline">{title}</h3>
+            <p className="text-muted-foreground">{description}</p>
+        </CardContent>
+    </Card>
+);
+
+const Footer = () => (
+    <footer className="bg-slate-800 text-slate-300 pt-12 pb-4">
+        <div className="container mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <h4 className="font-headline text-xl text-white mb-3">Apna Kam</h4>
+                    <p className="text-sm">
+                        भारत का सबसे बड़ा लोकल वर्कर मार्केटप्लेस, जहां आप अपने इलाके के स्किल्ड वर्कर्स से सीधे जुड़ सकते हैं।
+                    </p>
+                </div>
+                <div>
+                    <h5 className="font-headline text-lg text-white mb-3">Links</h5>
+                    <ul className="space-y-2 text-sm">
+                        <li><Link href="#" className="hover:text-primary transition-colors">Home</Link></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 className="font-headline text-lg text-white mb-3">Services</h5>
+                    <ul className="space-y-2 text-sm">
+                        <li><Link href="#" className="hover:text-primary transition-colors">Plumbing</Link></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">Electrician</Link></li>
+                        <li><Link href="#" className="hover:text-primary transition-colors">Carpenter</Link></li>
+                    </ul>
+                </div>
+                 <div>
+                    <h5 className="font-headline text-lg text-white mb-3">Contact Us</h5>
+                    <ul className="space-y-2 text-sm">
+                        <li className="flex items-center gap-2"><MapPin size={16}/> New Delhi, India</li>
+                        <li className="flex items-center gap-2"><Phone size={16}/> +91 98765 43210</li>
+                    </ul>
+                </div>
+            </div>
+            <div className="mt-8 border-t border-slate-700 pt-4 text-center text-sm">
+                <p>&copy; {new Date().getFullYear()} Apna Kam. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+)
+
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -130,99 +187,132 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
-              Find the Right Skill for the Job
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Apna Kaushal connects you with verified and skilled workers for all your home needs.
-            </p>
-          </div>
-
-          <div className="mt-8 max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search for 'plumber'..."
-                  className="pl-10 h-12 text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
+        <section className="relative py-20 sm:py-28 text-white">
+            <div className="absolute inset-0">
+                <Image 
+                    src="https://placehold.co/1300x800.png"
+                    alt="Hero background"
+                    fill
+                    className="object-cover"
+                    data-ai-hint="construction workers"
                 />
-              </div>
-               <div className="relative sm:max-w-40 flex-grow">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Pincode"
-                  className="pl-10 h-12 text-base"
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  onKeyDown={handleKeyDown}
-                  maxLength={6}
-                />
-              </div>
-              <div className='flex gap-2'>
-                <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                    <span className="hidden sm:inline ml-2">Search</span>
-                </Button>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="lg" className="h-12">
-                        <SlidersHorizontal className="h-5 w-5" />
-                        <span className="hidden sm:inline ml-2">Filters</span>
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
-                    <DropdownMenuLabel>Skill Categories</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {skillCategories.map(category => (
-                        <DropdownMenuCheckboxItem
-                        key={category}
-                        checked={!!selectedCategories[category]}
-                        onCheckedChange={() => toggleCategory(category)}
-                        >
-                        {category}
-                        </DropdownMenuCheckboxItem>
-                    ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                <div className="absolute inset-0 bg-black/50"></div>
             </div>
-          </div>
+            <div className="container mx-auto px-4 relative z-10">
+                 <div className="max-w-3xl mx-auto text-center">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl font-headline">
+                        अपने इलाके के स्किल्ड वर्कर ढूंढें
+                    </h1>
+                    <p className="mt-6 text-lg text-gray-200">
+                        प्लंबर, इलेक्ट्रीशियन, कारपेंटर, पेंटर और 25+ सेवाएं
+                    </p>
+                </div>
 
-          <div className="mt-12">
-            {isLoading ? (
+                 <div className="mt-10 max-w-2xl mx-auto">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="relative flex-grow">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                            type="search"
+                            placeholder="Search for 'plumber'..."
+                            className="pl-10 h-12 text-base text-foreground"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            />
+                        </div>
+                        <div className="relative sm:max-w-40 flex-grow">
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                            type="text"
+                            placeholder="Pincode"
+                            className="pl-10 h-12 text-base text-foreground"
+                            value={pincode}
+                            onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            onKeyDown={handleKeyDown}
+                            maxLength={6}
+                            />
+                        </div>
+                        <div className='flex gap-2'>
+                            <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isLoading}>
+                                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                                <span className="hidden sm:inline ml-2">Search</span>
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="lg" className="h-12 text-foreground">
+                                    <SlidersHorizontal className="h-5 w-5" />
+                                    <span className="hidden sm:inline ml-2">Filters</span>
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
+                                <DropdownMenuLabel>Skill Categories</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {skillCategories.map(category => (
+                                    <DropdownMenuCheckboxItem
+                                    key={category}
+                                    checked={!!selectedCategories[category]}
+                                    onCheckedChange={() => toggleCategory(category)}
+                                    >
+                                    {category}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+              {isLoading ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
+                  {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="flex flex-col space-y-3">
-                    <Skeleton className="h-[225px] w-full rounded-xl" />
-                    <div className="space-y-2">
+                      <Skeleton className="h-[225px] w-full rounded-xl" />
+                      <div className="space-y-2">
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-4 w-1/2" />
-                    </div>
+                      </div>
                   </div>
-                ))}
+                  ))}
               </div>
-            ) : searchResults.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {searchResults.map((worker) => (
-                    <WorkerCard key={worker.id} worker={worker} />
-                ))}
-                </div>
-            ) : (
+              ) : searchResults.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {searchResults.map((worker) => (
+                      <WorkerCard key={worker.id} worker={worker} />
+                  ))}
+                  </div>
+              ) : (
               <div className="text-center py-20 border-2 border-dashed rounded-lg">
                   <h2 className="text-xl font-semibold">No Workers Found</h2>
                   <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>
               </div>
-            )}
+              )}
           </div>
-        </div>
+        </section>
+
+        <section className="bg-slate-50 py-16">
+            <div className="container mx-auto px-4">
+                 <div className="text-center max-w-2xl mx-auto">
+                    <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-headline">
+                        Apna Kam कैसे काम करता है?
+                    </h2>
+                    <p className="mt-4 text-lg text-muted-foreground">
+                        Find and hire skilled workers in three simple steps.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                   <HowItWorksStep num={1} title="Search" description="अपनी जरूरत की सर्विस और लोकेशन सर्च करें" />
+                   <HowItWorksStep num={2} title="Contact" description="अपने पसंदीदा वर्कर को चुनकर कॉन्टैक्ट करें" />
+                   <HowItWorksStep num={3} title="Get it Done" description="वर्कर से काम करवाएं और पेमेंट करें" />
+                </div>
+            </div>
+        </section>
       </main>
+      <Footer />
     </div>
   );
 }
