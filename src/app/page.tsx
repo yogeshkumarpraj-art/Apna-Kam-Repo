@@ -8,7 +8,7 @@ import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, PaintBrush, Wrench, Sprout } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import {
 import { aiSearch, type AiSearchInput, type AiSearchOutput } from '@/ai/flows/ai-search';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/context/language-context';
 import { translations } from '@/lib/i18n';
 
@@ -61,7 +61,7 @@ const skillCategories = [
 ];
 
 const HowItWorksStep = ({ num, title, description }: { num: number, title: string, description: string }) => (
-    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
+    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 [perspective:1000px] hover:[transform:rotateX(4deg)]">
         <CardContent className="p-0">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
                 {num}
@@ -91,6 +91,7 @@ const Footer = () => {
                     <ul className="space-y-2 text-sm">
                         <li><Link href="#" className="hover:text-primary transition-colors">{t.home}</Link></li>
                         <li><Link href="#" className="hover:text-primary transition-colors">{t.aboutUs}</Link></li>
+                         <li><Link href="/blog" className="hover:text-primary transition-colors">{t.blog}</Link></li>
                         <li><Link href="#" className="hover:text-primary transition-colors">{t.contact}</Link></li>
                     </ul>
                 </div>
@@ -267,8 +268,36 @@ export default function HomePage() {
             </div>
         </section>
 
-        <section className="py-16">
+        <section id="categories" className="py-16">
           <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
+              {t.popularCategories}
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[
+                { name: t.plumbing, icon: Wrench, href:"#" },
+                { name: t.electrician, icon: Wrench, href:"#" },
+                { name: t.carpenter, icon: Wrench, href:"#" },
+                { name: t.painter, icon: PaintBrush, href:"#" },
+                { name: 'AC Service', icon: Wrench, href:"#" },
+                { name: t.homeCleaning, icon: Sprout, href:"#" },
+              ].map((cat) => (
+                <Link key={cat.name} href={cat.href} className="group">
+                  <Card className="text-center p-4 hover:shadow-lg transition-shadow hover:-translate-y-1">
+                    <cat.icon className="h-10 w-10 text-primary mx-auto mb-2" />
+                    <h3 className="font-semibold">{cat.name}</h3>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-slate-50 dark:bg-slate-900 py-16">
+          <div className="container mx-auto px-4">
+              <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
+                {t.featuredWorkers}
+              </h2>
               {isLoading ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 8 }).map((_, i) => (
@@ -283,7 +312,7 @@ export default function HomePage() {
               </div>
               ) : searchResults.length > 0 ? (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {searchResults.map((worker) => (
+                  {searchResults.slice(0, 4).map((worker) => (
                       <WorkerCard key={worker.id} worker={worker} />
                   ))}
                   </div>
@@ -296,7 +325,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-slate-50 dark:bg-slate-900 py-16">
+        <section className="py-16">
             <div className="container mx-auto px-4">
                  <div className="text-center max-w-2xl mx-auto">
                     <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-headline">

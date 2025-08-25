@@ -1,5 +1,5 @@
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
-import { Sprout, Users, Lock, Settings, ArrowLeft } from "lucide-react"
+import { Sprout, Users, Lock, Settings, ArrowLeft, Newspaper } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/user-nav"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <SidebarMenuButton tooltip="Users">
                               <Users />
                               <span>Users</span>
+                          </SidebarMenuButton>
+                      </Link>
+                  </SidebarMenuItem>
+                   <SidebarMenuItem>
+                      <Link href="/admin/blog" className="w-full">
+                          <SidebarMenuButton tooltip="Blog">
+                              <Newspaper />
+                              <span>Blog</span>
                           </SidebarMenuButton>
                       </Link>
                   </SidebarMenuItem>

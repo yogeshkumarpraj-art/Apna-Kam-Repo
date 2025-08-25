@@ -30,6 +30,14 @@ export function Header() {
               Apna Kam
             </span>
           </Link>
+          <nav className="hidden items-center space-x-2 md:flex">
+             <Button variant="ghost" asChild>
+                <Link href="/blog">{t.blog}</Link>
+            </Button>
+             <Button variant="ghost" asChild>
+                <Link href="/#categories">{t.categories}</Link>
+            </Button>
+          </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center space-x-2">
