@@ -8,7 +8,7 @@ import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, PaintBrush, Wrench, Sprout } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, Paintbrush, Wrench, Sprout } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -278,7 +278,7 @@ export default function HomePage() {
                 { name: t.plumbing, icon: Wrench, href:"#" },
                 { name: t.electrician, icon: Wrench, href:"#" },
                 { name: t.carpenter, icon: Wrench, href:"#" },
-                { name: t.painter, icon: PaintBrush, href:"#" },
+                { name: t.painter, icon: Paintbrush, href:"#" },
                 { name: 'AC Service', icon: Wrench, href:"#" },
                 { name: t.homeCleaning, icon: Sprout, href:"#" },
               ].map((cat) => (
