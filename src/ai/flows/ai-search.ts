@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const AiSearchInputSchema = z.object({
   query: z.string().describe('The search query from the user.'),
   skillCategories: z.array(z.string()).optional().describe('Optional list of skill categories to filter by.'),
-  location: z.string().optional().describe('Optional location to filter by.'),
+  pincode: z.string().optional().describe('Optional pincode to filter by location.'),
 });
 
 export type AiSearchInput = z.infer<typeof AiSearchInputSchema>;
@@ -27,7 +27,8 @@ const AiSearchOutputSchema = z.object({
       name: z.string().describe('The name of the worker.'),
       skills: z.array(z.string()).describe('The skills of the worker.'),
       category: z.string().describe('The category of the worker.'),
-      location: z.string().describe('The location of the worker.'),
+      location: z.string().describe('The location of the worker, which should be a city or area.'),
+      pincode: z.string().optional().describe('The 6-digit postal code of the worker.'),
       description: z.string().describe('A short description of the worker.'),
     })
   ).describe('The search results, an array of worker profiles.'),
@@ -47,10 +48,10 @@ const prompt = ai.definePrompt({
 
 Given the following search query: "{{query}}"
 
-Return a JSON array of worker profiles that match the search query. Each worker profile should include workerId, name, skills, category, location and a short description. 
+Return a JSON array of worker profiles that match the search query. Each worker profile should include workerId, name, skills, category, location, pincode, and a short description. 
 
 Consider the following skill categories if provided: {{skillCategories}}
-Consider the following location if provided: {{location}}
+Consider the following pincode if provided: {{pincode}}
 
 Ensure that the results are relevant to the query and the worker profiles contain the information requested in the correct fields.
 `,

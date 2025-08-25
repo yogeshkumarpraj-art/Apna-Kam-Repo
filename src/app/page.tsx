@@ -6,7 +6,7 @@ import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,22 +28,12 @@ const mockWorkers: Worker[] = [
 ];
 
 const skillCategories = [
-  // Construction & Hard Labour
-  'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter',
-  // Electronics & Repair
-  'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair',
-  // Home & Personal Services
-  'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service',
-  // Events & Logistics
-  'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic',
-  // Cleaning & Maintenance
-  'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)',
-  // Fabrication & Machinery
-  'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
+    'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [pincode, setPincode] = useState('');
   const [searchResults, setSearchResults] = useState<Worker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<Record<string, boolean>>({});
@@ -53,6 +43,7 @@ export default function HomePage() {
     try {
         const input: AiSearchInput = {
             query: searchQuery,
+            pincode: pincode,
             skillCategories: Object.keys(selectedCategories).filter(k => selectedCategories[k]),
         };
         // In a real app, the AI output would be mapped to the Worker[] type.
@@ -80,6 +71,12 @@ export default function HomePage() {
     setSelectedCategories(prev => ({...prev, [category]: !prev[category]}));
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -95,43 +92,56 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 max-w-2xl mx-auto">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-grow">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search for 'plumber in Delhi'..."
+                  placeholder="Search for 'plumber'..."
                   className="pl-10 h-12 text-base"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={handleKeyDown}
                 />
               </div>
-              <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSearch} disabled={isLoading}>
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                <span className="hidden sm:inline ml-2">Search</span>
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="lg" className="h-12">
-                    <SlidersHorizontal className="h-5 w-5" />
-                    <span className="hidden sm:inline ml-2">Filters</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Skill Categories</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {skillCategories.map(category => (
-                    <DropdownMenuCheckboxItem
-                      key={category}
-                      checked={!!selectedCategories[category]}
-                      onCheckedChange={() => toggleCategory(category)}
-                    >
-                      {category}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+               <div className="relative sm:max-w-40 flex-grow">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Pincode"
+                  className="pl-10 h-12 text-base"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+              </div>
+              <div className='flex gap-2'>
+                <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                    <span className="hidden sm:inline ml-2">Search</span>
+                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="lg" className="h-12">
+                        <SlidersHorizontal className="h-5 w-5" />
+                        <span className="hidden sm:inline ml-2">Filters</span>
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-64 max-h-80 overflow-y-auto">
+                    <DropdownMenuLabel>Skill Categories</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {skillCategories.map(category => (
+                        <DropdownMenuCheckboxItem
+                        key={category}
+                        checked={!!selectedCategories[category]}
+                        onCheckedChange={() => toggleCategory(category)}
+                        >
+                        {category}
+                        </DropdownMenuCheckboxItem>
+                    ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
 
