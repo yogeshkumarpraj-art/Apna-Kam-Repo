@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -26,9 +27,11 @@ export default function BlogManagementPage() {
             <CardTitle>Blog Management</CardTitle>
             <CardDescription>Create, edit, and manage all blog posts.</CardDescription>
         </div>
-        <Button>
+        <Button asChild>
+          <Link href="/admin/blog/new">
             <PlusCircle className="mr-2 h-4 w-4" />
             New Post
+          </Link>
         </Button>
       </CardHeader>
       <CardContent>
