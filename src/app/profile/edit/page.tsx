@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from '@/components/ui/badge';
 import { suggestSkills } from '@/ai/flows/skill-suggestion';
-import { Loader2, Plus, Sparkles, X, Trash2, Upload } from 'lucide-react';
+import { Loader2, Plus, Sparkles, X, Trash2, Upload, ShieldCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -59,6 +59,9 @@ export default function ProfileEditPage() {
     const [currentSkills, setCurrentSkills] = useState<string[]>([]);
     const [newSkill, setNewSkill] = useState('');
     const [portfolio, setPortfolio] = useState<Worker['portfolio']>([]);
+    const [aadharNumber, setAadharNumber] = useState('');
+    const [panNumber, setPanNumber] = useState('');
+    const [drivingLicense, setDrivingLicense] = useState('');
 
     useEffect(() => {
         if (user) {
@@ -82,6 +85,9 @@ export default function ProfileEditPage() {
                     setCurrentSkills(data.skills || []);
                     setWorkerDetails(data.description || '');
                     setPortfolio(data.portfolio || []);
+                    setAadharNumber(data.aadharNumber || '');
+                    setPanNumber(data.panNumber || '');
+                    setDrivingLicense(data.drivingLicense || '');
                 } else {
                     // Pre-fill from auth if no profile exists
                     setName(user.displayName || '');
@@ -246,6 +252,9 @@ export default function ProfileEditPage() {
                 skills: isWorker ? currentSkills : [],
                 description: isWorker ? workerDetails : '',
                 portfolio: isWorker ? portfolio : [],
+                aadharNumber: isWorker ? aadharNumber : '',
+                panNumber: isWorker ? panNumber : '',
+                drivingLicense: isWorker ? drivingLicense : '',
                 // Also update the photoURL in auth for consistency if it changed
                 ...(user.photoURL !== avatar && { photoURL: avatar }),
             };
@@ -387,6 +396,33 @@ export default function ProfileEditPage() {
                                             </RadioGroup>
                                         </div>
                                     </div>
+                                    
+                                    <Separator />
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldCheck className="h-5 w-5 text-primary" />
+                                            <h4 className="text-md font-semibold">Verification Details</h4>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Provide your ID details to build trust with customers. This information will not be shown publicly.</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="aadhar">Aadhar Number (12 digits)</Label>
+                                                <Input id="aadhar" value={aadharNumber} onChange={e => setAadharNumber(e.target.value)} placeholder="XXXX XXXX XXXX" maxLength={12}/>
+                                            </div>
+                                             <div className="space-y-2">
+                                                <Label htmlFor="pan">PAN Card Number</Label>
+                                                <Input id="pan" value={panNumber} onChange={e => setPanNumber(e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10}/>
+                                            </div>
+                                             <div className="space-y-2 md:col-span-2">
+                                                <Label htmlFor="dl">Driving License Number</Label>
+                                                <Input id="dl" value={drivingLicense} onChange={e => setDrivingLicense(e.target.value.toUpperCase())} placeholder="e.g., DL14 20110012345"/>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Separator />
+
 
                                     <div className="space-y-4">
                                         <h4 className="text-md font-semibold">Portfolio Images</h4>

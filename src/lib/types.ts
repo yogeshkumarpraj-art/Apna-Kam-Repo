@@ -18,6 +18,9 @@ export interface Worker {
     phone: string;
     email: string;
   };
+  aadharNumber?: string;
+  panNumber?: string;
+  drivingLicense?: string;
 }
 
 export interface Review {

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2, Sparkles } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2, Sparkles, ShieldAlert } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createRazorpayOrder, verifyPayment } from '@/app/payments/actions';
 import Script from 'next/script';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 export default function WorkerProfilePage() {
@@ -145,7 +146,7 @@ export default function WorkerProfilePage() {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC_ for client-side env vars
                 amount: order.amount,
                 currency: order.currency,
-                name: "Apna Kam",
+                name: "Apna Kaushal",
                 description: `Fee to contact ${worker.name}`,
                 order_id: order.id,
                 handler: async function (response: any) {
@@ -167,7 +168,7 @@ export default function WorkerProfilePage() {
                     contact: user.phoneNumber || ''
                 },
                 notes: {
-                    address: "Apna Kam Corporate Office"
+                    address: "Apna Kaushal Corporate Office"
                 },
                 theme: {
                     color: "#5DADE2"
@@ -400,6 +401,14 @@ export default function WorkerProfilePage() {
                                     </div>
                                 </div>
                                 <Separator className="my-6" />
+                                
+                                <Alert variant="destructive" className="mb-4">
+                                    <ShieldAlert className="h-4 w-4" />
+                                    <AlertTitle>Disclaimer</AlertTitle>
+                                    <AlertDescription>
+                                        Apna Kaushal is a discovery platform. We are not responsible for any fraud, crime, or accidents. Please verify the worker's credentials on your own.
+                                    </AlertDescription>
+                                </Alert>
                                 
                                 {contactRevealed ? (
                                     <div className="space-y-2">
