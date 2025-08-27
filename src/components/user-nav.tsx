@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CreditCard, Heart, LogOut, Settings, Shield, User, Briefcase } from "lucide-react"
+import { CreditCard, Heart, LogOut, Settings, Shield, User, Briefcase, LayoutGrid, Hammer } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/context/auth-context"
 import { auth, db } from "@/lib/firebase"
@@ -100,19 +100,28 @@ export function UserNav() {
               <span>Favorites</span>
             </DropdownMenuItem>
           </Link>
-          {!profile.isWorker && (
+           <Link href="/#categories">
             <DropdownMenuItem>
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Billing</span>
+              <LayoutGrid className="mr-2 h-4 w-4" />
+              <span>Categories</span>
             </DropdownMenuItem>
-          )}
+          </Link>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <Link href="/profile/edit">
+              <DropdownMenuItem>
+                <Hammer className="mr-2 h-4 w-4" />
+                <span>Become a Worker</span>
+              </DropdownMenuItem>
+            </Link>
           <Link href="/profile/edit">
             <DropdownMenuItem>
               <Settings className="mr-2 h-4 w-4" />
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-          {profile.isAdmin && (
+           {profile.isAdmin && (
             <Link href="/admin">
                 <DropdownMenuItem>
                     <Shield className="mr-2 h-4 w-4" />
