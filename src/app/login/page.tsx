@@ -15,6 +15,9 @@ import { useToast } from '@/hooks/use-toast';
 // Initialize auth only on the client side
 const auth = getAuth(app);
 
+// Declare recaptchaVerifier in a scope accessible by the component
+let recaptchaVerifier: RecaptchaVerifier | null = null;
+
 export default function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
@@ -24,17 +27,15 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  // No need for useEffect to initialize recaptcha
-
   const generateRecaptcha = () => {
-    // Check if verifier already exists
-    if (window.recaptchaVerifier) return;
-    
-    // @ts-ignore
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    // Prevent re-rendering the recaptcha
+    if (recaptchaVerifier) return;
+
+    recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
       'size': 'invisible',
       'callback': (response: any) => {
         // reCAPTCHA solved, allow signInWithPhoneNumber.
+        // This callback is crucial for invisible reCAPTCHA.
       }
     });
   };
@@ -51,8 +52,8 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      generateRecaptcha(); // Generate recaptcha right before use
-      const appVerifier = window.recaptchaVerifier;
+      generateRecaptcha(); // Ensure verifier is ready
+      const appVerifier = recaptchaVerifier!;
       const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
@@ -67,6 +68,11 @@ export default function LoginPage() {
         description: "Please check the phone number or try again later.",
         variant: "destructive",
       });
+       // Reset verifier on error
+      if (recaptchaVerifier) {
+        recaptchaVerifier.clear();
+        recaptchaVerifier = null;
+      }
     } finally {
       setIsLoading(false);
     }
