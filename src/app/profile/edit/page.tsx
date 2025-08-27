@@ -29,7 +29,7 @@ const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
 
-const MAX_IMAGE_SIZE_MB = 5; // Increased limit slightly
+const MAX_IMAGE_SIZE_MB = 5;
 
 export default function ProfileEditPage() {
     const { user } = useAuth();
@@ -146,7 +146,7 @@ export default function ProfileEditPage() {
     const handleImageUpload = (file: File) => {
         if (!user) return;
         const fileExtension = file.name.split('.').pop();
-        const fileName = `${new Date().getTime()}.${fileExtension}`;
+        const fileName = `${user.uid}_${new Date().getTime()}.${fileExtension}`;
         const storagePath = `portfolio/${user.uid}/${fileName}`;
         const storageRef = ref(storage, storagePath);
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -162,19 +162,11 @@ export default function ProfileEditPage() {
                 setUploadProgress(null);
             },
             () => {
-                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                     const newImage = { url: downloadURL, hint: "worker project", fullPath: storagePath };
-                     // Update state first for immediate UI feedback
                     setPortfolio(prev => [...prev, newImage]);
-                    
-                    // Then, update Firestore
-                    const userRef = doc(db, "users", user.uid);
-                    await updateDoc(userRef, {
-                        portfolio: arrayUnion(newImage)
-                    });
-
-                    toast({ title: "Image Uploaded", description: "Your portfolio has been updated." });
                     setUploadProgress(null);
+                    toast({ title: "Image Uploaded", description: "Your image is ready. Don't forget to save changes." });
                 });
             }
         );
@@ -182,24 +174,27 @@ export default function ProfileEditPage() {
 
     const handleImageDelete = async (imageToDelete: Worker['portfolio'][0]) => {
         if (!user) return;
+        
+        // Optimistically update the UI
+        setPortfolio(prev => prev.filter(img => img.url !== imageToDelete.url));
+
         const imageRef = ref(storage, imageToDelete.fullPath);
         
         try {
             // Delete from Storage
             await deleteObject(imageRef);
 
-            // Delete from Firestore
+            // Delete from Firestore by updating the user doc
             const userRef = doc(db, "users", user.uid);
             await updateDoc(userRef, {
                 portfolio: arrayRemove(imageToDelete)
             });
 
-            // Update local state
-            setPortfolio(prev => prev.filter(img => img.url !== imageToDelete.url));
-
             toast({ title: "Image Deleted", description: "Your portfolio has been updated." });
         } catch (error) {
             console.error("Error deleting image:", error);
+            // Revert UI if deletion fails
+            setPortfolio(prev => [...prev, imageToDelete]);
             toast({ title: "Delete Failed", description: "Could not delete image.", variant: "destructive" });
         }
     };
@@ -228,7 +223,7 @@ export default function ProfileEditPage() {
                 uid: user.uid,
                 phone: user.phoneNumber,
                 isWorker: isWorker,
-                // We don't save portfolio here because it's handled by upload/delete functions
+                portfolio: isWorker ? portfolio : [], // Save the portfolio array
             };
 
             await setDoc(userRef, dataToSave, { merge: true });
@@ -309,7 +304,7 @@ export default function ProfileEditPage() {
                                 </Select>
                             </div>
 
-                            {category !== 'customer' && (
+                            {category !== 'customer' && !!category && (
                                 <div className="space-y-8 pt-4 border-t mt-8">
                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
@@ -352,18 +347,19 @@ export default function ProfileEditPage() {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {uploadProgress !== null && (
+                                            {uploadProgress !== null ? (
                                                 <div className="border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4">
                                                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
                                                     <Progress value={uploadProgress} className="w-full h-2" />
                                                     <p className="text-xs text-muted-foreground mt-1">Uploading...</p>
                                                 </div>
+                                            ) : (
+                                                <Label htmlFor="file-upload" className="border-2 border-dashed rounded-md cursor-pointer flex flex-col items-center justify-center hover:bg-accent/50 transition-colors p-4 aspect-square">
+                                                    <Upload className="h-8 w-8 text-muted-foreground"/>
+                                                    <span className="text-sm text-muted-foreground mt-2 text-center">Upload Image</span>
+                                                </Label>
                                             )}
-                                            <Label htmlFor="file-upload" className="border-2 border-dashed rounded-md cursor-pointer flex flex-col items-center justify-center hover:bg-accent/50 transition-colors p-4">
-                                                <Upload className="h-8 w-8 text-muted-foreground"/>
-                                                <span className="text-sm text-muted-foreground mt-2 text-center">Upload Image</span>
-                                            </Label>
-                                            <Input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg" disabled={uploadProgress !== null}/>
+                                            <Input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={uploadProgress !== null}/>
                                         </div>
                                     </div>
 
@@ -412,7 +408,7 @@ export default function ProfileEditPage() {
                         
                         <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline" onClick={() => router.push('/profile')}>Cancel</Button>
-                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving}>
+                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving || uploadProgress !== null}>
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Save Changes
                             </Button>
