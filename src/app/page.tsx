@@ -73,6 +73,8 @@ const Footer = () => {
                     <h5 className="font-headline text-lg text-white mb-3">{t.legal}</h5>
                     <ul className="space-y-2 text-sm">
                         <li><Link href="/policy" className="hover:text-primary transition-colors">{t.privacyPolicy}</Link></li>
+                        <li><Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
+                        <li><Link href="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
                     </ul>
                 </div>
                  <div>
@@ -393,5 +395,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
