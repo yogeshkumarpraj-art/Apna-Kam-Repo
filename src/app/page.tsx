@@ -9,7 +9,7 @@ import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, Paintbrush, Wrench, Sprout } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, Paintbrush, Wrench, Sprout, Hammer, Zap, AirVent, Sparkles } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -276,24 +276,26 @@ export default function HomePage() {
             </div>
         </section>
 
-        <section id="categories" className="py-16">
+        <section id="categories" className="py-16 bg-slate-50 dark:bg-slate-900">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
               {t.popularCategories}
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
               {[
                 { name: t.plumbing, icon: Wrench, href:"#" },
-                { name: t.electrician, icon: Wrench, href:"#" },
-                { name: t.carpenter, icon: Wrench, href:"#" },
+                { name: t.electrician, icon: Zap, href:"#" },
+                { name: t.carpenter, icon: Hammer, href:"#" },
                 { name: t.painter, icon: Paintbrush, href:"#" },
-                { name: t.acService, icon: Wrench, href:"#" },
-                { name: t.homeCleaning, icon: Sprout, href:"#" },
+                { name: t.acService, icon: AirVent, href:"#" },
+                { name: t.homeCleaning, icon: Sparkles, href:"#" },
               ].map((cat) => (
                 <Link key={cat.name} href={cat.href} className="group">
-                  <Card className="text-center p-4 hover:shadow-lg transition-shadow hover:-translate-y-1">
-                    <cat.icon className="h-10 w-10 text-primary mx-auto mb-2" />
-                    <h3 className="font-semibold">{cat.name}</h3>
+                  <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 card-glow">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                        <cat.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                    </div>
+                    <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">{cat.name}</h3>
                   </Card>
                 </Link>
               ))}
@@ -301,7 +303,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-slate-50 dark:bg-slate-900 py-16">
+        <section className="bg-white dark:bg-card py-16">
           <div className="container mx-auto px-4">
               <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
                 {t.featuredWorkers}
