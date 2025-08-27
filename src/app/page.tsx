@@ -234,7 +234,7 @@ export default function HomePage() {
         <section className="relative py-20 sm:py-28 text-white">
             <div className="absolute inset-0">
                 <Image 
-                    src="https://placehold.co/1200x400/1e40af/FFFFFF?text=Apna+Kam"
+                    src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1200&h=400&fit=crop"
                     alt="Hero background"
                     fill
                     className="object-cover"
@@ -388,5 +388,7 @@ export default function HomePage() {
     
 
 
+
+    
 
     
