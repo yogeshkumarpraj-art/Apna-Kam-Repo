@@ -38,6 +38,12 @@ export function Header() {
              <Button variant="ghost" asChild>
                 <Link href="/#categories">{t.categories}</Link>
             </Button>
+            <Button variant="ghost" asChild>
+                <Link href="/about">{t.aboutUs}</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+                <Link href="/contact">{t.contact}</Link>
+            </Button>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
@@ -84,3 +90,5 @@ export function Header() {
     </header>
   )
 }
+
+    

@@ -64,17 +64,15 @@ const Footer = () => {
                     <h5 className="font-headline text-lg text-white mb-3">{t.links}</h5>
                     <ul className="space-y-2 text-sm">
                         <li><Link href="/" className="hover:text-primary transition-colors">{t.home}</Link></li>
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.aboutUs}</Link></li>
+                        <li><Link href="/about" className="hover:text-primary transition-colors">{t.aboutUs}</Link></li>
                          <li><Link href="/blog" className="hover:text-primary transition-colors">{t.blog}</Link></li>
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.contact}</Link></li>
+                        <li><Link href="/contact" className="hover:text-primary transition-colors">{t.contact}</Link></li>
                     </ul>
                 </div>
                 <div>
-                    <h5 className="font-headline text-lg text-white mb-3">{t.services}</h5>
+                    <h5 className="font-headline text-lg text-white mb-3">{t.legal}</h5>
                     <ul className="space-y-2 text-sm">
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.plumbing}</Link></li>
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.electrician}</Link></li>
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.carpenter}</Link></li>
+                        <li><Link href="/policy" className="hover:text-primary transition-colors">{t.privacyPolicy}</Link></li>
                     </ul>
                 </div>
                  <div>
@@ -176,6 +174,7 @@ export default function HomePage() {
         if (!effectiveQuery && !pincode && activeCategories.length === 0) {
             const allWorkers = await fetchAllWorkers();
             setSearchResults(allWorkers);
+            setIsSearching(false);
             return;
         }
 
@@ -394,3 +393,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+    
