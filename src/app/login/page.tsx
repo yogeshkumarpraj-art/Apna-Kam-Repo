@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,21 +37,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const setupRecaptcha = () => {
+  useEffect(() => {
+    // This effect will run once when the component mounts
     // @ts-ignore
-    if (!window.recaptchaVerifier) {
-        // @ts-ignore
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible',
-            'callback': (response: any) => {
-                // reCAPTCHA solved, allow signInWithPhoneNumber.
-            },
-            'expired-callback': () => {
-                // Response expired. Ask user to solve reCAPTCHA again.
-            }
-        });
-    }
-  }
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      'size': 'invisible',
+      'callback': (response: any) => {
+        // reCAPTCHA solved, you can proceed with phone sign-in
+      }
+    });
+  }, []);
 
 
   const handleSendOtp = async () => {
@@ -66,7 +61,6 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      setupRecaptcha();
       // @ts-ignore
       const appVerifier = window.recaptchaVerifier;
       const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
@@ -237,3 +231,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
