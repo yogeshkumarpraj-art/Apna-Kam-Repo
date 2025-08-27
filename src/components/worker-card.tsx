@@ -134,7 +134,7 @@ export function WorkerCard({ worker }: WorkerCardProps) {
           </div>
           <div className="mt-4 text-right flex-1 flex items-end justify-end">
             <p className="text-lg font-bold text-foreground">
-              ₹{worker.price}
+              ₹ {worker.price}
               <span className="text-sm font-normal text-muted-foreground">{getPriceSuffix(worker.priceType)}</span>
             </p>
           </div>
