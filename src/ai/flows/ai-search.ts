@@ -44,7 +44,7 @@ const prompt = ai.definePrompt({
   // The output from the prompt will be the direct list of workers now.
   output: {schema: AiSearchOutputSchema},
   tools: [searchWorkersTool],
-  prompt: `You are an AI search assistant for the "Apna Kaushal" platform. Your goal is to help users find the best-skilled workers in India.
+  prompt: `You are an AI search assistant for the "Apna Kam" platform. Your goal is to help users find the best-skilled workers in India.
 
 User's search query: "{{query}}"
 {{#if pincode}}

@@ -14,7 +14,7 @@ export default function BlogPage() {
       <Header />
       <main className="container mx-auto px-4 py-8 flex-1">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 font-headline">Apna Kaushal Blog</h1>
+          <h1 className="text-4xl font-bold mb-8 font-headline">Apna Kam Blog</h1>
           <div className="space-y-6">
             {allPostsData.map(({ id, date, title, description }) => (
               <Link href={`/blog/${id}`} key={id} className="block">

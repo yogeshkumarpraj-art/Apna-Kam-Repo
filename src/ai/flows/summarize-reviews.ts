@@ -62,7 +62,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeReviewsPrompt',
   input: {schema: InternalFlowInputSchema},
   output: {schema: SummarizeReviewsOutputSchema},
-  prompt: `You are an expert review analyst for the "Apna Kaushal" platform. Your task is to provide a fair and balanced summary of a worker based on customer reviews.
+  prompt: `You are an expert review analyst for the "Apna Kam" platform. Your task is to provide a fair and balanced summary of a worker based on customer reviews.
 
 Analyze the following review comments:
 {{#each reviewTexts}}

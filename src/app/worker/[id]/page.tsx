@@ -146,7 +146,7 @@ export default function WorkerProfilePage() {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC_ for client-side env vars
                 amount: order.amount,
                 currency: order.currency,
-                name: "Apna Kaushal",
+                name: "Apna Kam",
                 description: `Fee to contact ${worker.name}`,
                 order_id: order.id,
                 handler: async function (response: any) {
@@ -168,7 +168,7 @@ export default function WorkerProfilePage() {
                     contact: user.phoneNumber || ''
                 },
                 notes: {
-                    address: "Apna Kaushal Corporate Office"
+                    address: "Apna Kam Corporate Office"
                 },
                 theme: {
                     color: "#5DADE2"
@@ -187,7 +187,7 @@ export default function WorkerProfilePage() {
 
     const handleWhatsAppShare = () => {
         if (!worker) return;
-        const text = `Check out this skilled worker on Apna Kaushal: ${worker.name} - ${window.location.href}`;
+        const text = `Check out this skilled worker on Apna Kam: ${worker.name} - ${window.location.href}`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
     }
@@ -406,7 +406,7 @@ export default function WorkerProfilePage() {
                                     <ShieldAlert className="h-4 w-4" />
                                     <AlertTitle>Disclaimer</AlertTitle>
                                     <AlertDescription>
-                                        Apna Kaushal is a discovery platform. We are not responsible for any fraud, crime, or accidents. Please verify the worker's credentials on your own.
+                                        Apna Kam is a discovery platform. We are not responsible for any fraud, crime, or accidents. Please verify the worker's credentials on your own.
                                     </AlertDescription>
                                 </Alert>
                                 
@@ -475,4 +475,3 @@ export default function WorkerProfilePage() {
         </>
     );
 }
-

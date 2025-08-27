@@ -36,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'generateBlogPostPrompt',
   input: {schema: GenerateBlogPostInputSchema},
   output: {schema: GenerateBlogPostOutputSchema},
-  prompt: `You are an expert content writer for "Apna Kaushal," a platform connecting skilled workers in India with customers. Your tone should be helpful, informative, and encouraging.
+  prompt: `You are an expert content writer for "Apna Kam," a platform connecting skilled workers in India with customers. Your tone should be helpful, informative, and encouraging.
 
 You are tasked with writing a blog post. Use the following details to generate the content.
 
@@ -49,8 +49,8 @@ Based on this, write a full, engaging, and SEO-friendly blog post. The post must
 - Use Markdown for headings (e.g., ###), bullet points (e.g., -), and bold text (**text**).
 - Structure the post with clear headings and paragraphs.
 - If relevant, include practical tips or numbered lists.
-- End with a concluding paragraph that summarizes the key points and encourages readers to use the "Apna Kaushal" platform.
-- The language should be simple and easy to understand for a general audience in India. You can use some Hindi words if it feels natural (e.g., "Apna Kaushal par," "ekdum aasan").`,
+- End with a concluding paragraph that summarizes the key points and encourages readers to use the "Apna Kam" platform.
+- The language should be simple and easy to understand for a general audience in India. You can use some Hindi words if it feels natural (e.g., "Apna Kam par," "ekdum aasan").`,
 });
 
 const generateBlogPostFlow = ai.defineFlow(

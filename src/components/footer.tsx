@@ -15,7 +15,7 @@ export const Footer = () => {
         <div className="container mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div>
-                    <h4 className="font-headline text-xl text-white mb-3">Apna Kaushal</h4>
+                    <h4 className="font-headline text-xl text-white mb-3">Apna Kam</h4>
                     <p className="text-sm">
                         {t.footerDescription}
                     </p>
@@ -46,7 +46,7 @@ export const Footer = () => {
                 </div>
             </div>
             <div className="mt-8 border-t border-slate-700 pt-4 text-center text-sm">
-                <p>&copy; {new Date().getFullYear()} Apna Kaushal. {t.allRightsReserved}</p>
+                <p>&copy; {new Date().getFullYear()} Apna Kam. {t.allRightsReserved}</p>
             </div>
         </div>
     </footer>
