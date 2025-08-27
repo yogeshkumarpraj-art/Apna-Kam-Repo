@@ -23,6 +23,7 @@ import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { useRouter } from 'next/navigation';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const skillCategories = [
@@ -39,12 +40,15 @@ export default function ProfileEditPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
-    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+    const [portfolioUploadProgress, setPortfolioUploadProgress] = useState<number | null>(null);
+    const [avatarUploadProgress, setAvatarUploadProgress] = useState<number | null>(null);
+
 
     // Form state
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [avatar, setAvatar] = useState('https://placehold.co/100x100.png');
     const [location, setLocation] = useState('');
     const [pincode, setPincode] = useState('');
     const [category, setCategory] = useState('');
@@ -69,6 +73,7 @@ export default function ProfileEditPage() {
                     const data = docSnap.data();
                     setName(data.name || user.displayName || '');
                     setEmail(data.email || user.email || '');
+                    setAvatar(data.avatar || user.photoURL || 'https://placehold.co/100x100.png');
                     setLocation(data.location || '');
                     setPincode(data.pincode || '');
                     setCategory(data.isWorker ? data.category || '' : 'customer');
@@ -81,6 +86,7 @@ export default function ProfileEditPage() {
                     // Pre-fill from auth if no profile exists
                     setName(user.displayName || '');
                     setEmail(user.email || '');
+                    setAvatar(user.photoURL || 'https://placehold.co/100x100.png');
                     setCategory('customer'); // Default new users to customer
                 }
                 setIsFetching(false);
@@ -128,7 +134,7 @@ export default function ProfileEditPage() {
         setCurrentSkills(currentSkills.filter(skill => skill !== skillToRemove));
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, uploadType: 'portfolio' | 'avatar') => {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
@@ -139,33 +145,46 @@ export default function ProfileEditPage() {
                 });
                 return;
             }
-            handleImageUpload(file);
+            handleImageUpload(file, uploadType);
         }
     };
 
-    const handleImageUpload = (file: File) => {
+    const handleImageUpload = (file: File, uploadType: 'portfolio' | 'avatar') => {
         if (!user) return;
         const fileExtension = file.name.split('.').pop();
         const fileName = `${user.uid}_${new Date().getTime()}.${fileExtension}`;
-        const storagePath = `portfolio/${user.uid}/${fileName}`;
+        const storagePath = `${uploadType}/${user.uid}/${fileName}`;
         const storageRef = ref(storage, storagePath);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
+                if (uploadType === 'portfolio') {
+                    setPortfolioUploadProgress(progress);
+                } else {
+                    setAvatarUploadProgress(progress);
+                }
             },
             (error) => {
                 console.error("Upload failed:", error);
                 toast({ title: "Upload Failed", description: "Could not upload image.", variant: "destructive" });
-                setUploadProgress(null);
+                 if (uploadType === 'portfolio') {
+                    setPortfolioUploadProgress(null);
+                } else {
+                    setAvatarUploadProgress(null);
+                }
             },
             () => {
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                    const newImage = { url: downloadURL, hint: "worker project", fullPath: storagePath };
-                    setPortfolio(prev => [...prev, newImage]);
-                    setUploadProgress(null);
+                    if (uploadType === 'portfolio') {
+                        const newImage = { url: downloadURL, hint: "worker project", fullPath: storagePath };
+                        setPortfolio(prev => [...prev, newImage]);
+                        setPortfolioUploadProgress(null);
+                    } else {
+                        setAvatar(downloadURL);
+                        setAvatarUploadProgress(null);
+                    }
                     toast({ title: "Image Uploaded", description: "Your image is ready. Don't forget to save changes." });
                 });
             }
@@ -175,16 +194,12 @@ export default function ProfileEditPage() {
     const handleImageDelete = async (imageToDelete: Worker['portfolio'][0]) => {
         if (!user) return;
         
-        // Optimistically update the UI
         setPortfolio(prev => prev.filter(img => img.url !== imageToDelete.url));
 
         const imageRef = ref(storage, imageToDelete.fullPath);
         
         try {
-            // Delete from Storage
             await deleteObject(imageRef);
-
-            // Delete from Firestore by updating the user doc
             const userRef = doc(db, "users", user.uid);
             await updateDoc(userRef, {
                 portfolio: arrayRemove(imageToDelete)
@@ -193,7 +208,6 @@ export default function ProfileEditPage() {
             toast({ title: "Image Deleted", description: "Your portfolio has been updated." });
         } catch (error) {
             console.error("Error deleting image:", error);
-            // Revert UI if deletion fails
             setPortfolio(prev => [...prev, imageToDelete]);
             toast({ title: "Delete Failed", description: "Could not delete image.", variant: "destructive" });
         }
@@ -213,6 +227,7 @@ export default function ProfileEditPage() {
             const dataToSave: any = {
                 name,
                 email,
+                avatar,
                 location,
                 pincode,
                 uid: user.uid,
@@ -224,6 +239,8 @@ export default function ProfileEditPage() {
                 skills: isWorker ? currentSkills : [],
                 description: isWorker ? workerDetails : '',
                 portfolio: isWorker ? portfolio : [],
+                // Also update the photoURL in auth for consistency if it changed
+                ...(user.photoURL !== avatar && { photoURL: avatar }),
             };
 
             await setDoc(userRef, dataToSave, { merge: true });
@@ -283,6 +300,36 @@ export default function ProfileEditPage() {
                                 </div>
                                 <div className="space-y-2"><Label htmlFor="location">Location</Label><Input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Delhi, India"/></div>
                                 <div className="space-y-2"><Label htmlFor="pincode">Pincode</Label><Input id="pincode" value={pincode} onChange={e => setPincode(e.target.value)} placeholder="e.g. 110001"/></div>
+                            </div>
+                        </div>
+
+                         <div className="space-y-4">
+                            <h3 className="text-lg font-semibold">Profile Picture</h3>
+                            <div className="flex items-center gap-6">
+                                <Avatar className="w-24 h-24">
+                                    <AvatarImage src={avatar} alt="Profile avatar" />
+                                    <AvatarFallback><Loader2 className="animate-spin" /></AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-2">
+                                    <Input 
+                                        id="avatar-upload" 
+                                        type="file" 
+                                        className="sr-only" 
+                                        onChange={(e) => handleFileChange(e, 'avatar')} 
+                                        accept="image/png, image/jpeg, image/webp" 
+                                        disabled={avatarUploadProgress !== null}
+                                    />
+                                    <Label htmlFor="avatar-upload">
+                                        <Button asChild variant="outline" disabled={avatarUploadProgress !== null}>
+                                            <span>
+                                                {avatarUploadProgress !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                                Upload New Picture
+                                            </span>
+                                        </Button>
+                                    </Label>
+                                    <p className="text-xs text-muted-foreground">Max 5MB. PNG, JPG, WebP.</p>
+                                    {avatarUploadProgress !== null && <Progress value={avatarUploadProgress} className="h-2 w-full" />}
+                                </div>
                             </div>
                         </div>
 
@@ -347,19 +394,19 @@ export default function ProfileEditPage() {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {uploadProgress !== null ? (
+                                            {portfolioUploadProgress !== null ? (
                                                 <div className="border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4">
                                                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
-                                                    <Progress value={uploadProgress} className="w-full h-2" />
+                                                    <Progress value={portfolioUploadProgress} className="w-full h-2" />
                                                     <p className="text-xs text-muted-foreground mt-1">Uploading...</p>
                                                 </div>
                                             ) : (
-                                                <Label htmlFor="file-upload" className="border-2 border-dashed rounded-md cursor-pointer flex flex-col items-center justify-center hover:bg-accent/50 transition-colors p-4 aspect-square">
+                                                <Label htmlFor="portfolio-upload" className="border-2 border-dashed rounded-md cursor-pointer flex flex-col items-center justify-center hover:bg-accent/50 transition-colors p-4 aspect-square">
                                                     <Upload className="h-8 w-8 text-muted-foreground"/>
                                                     <span className="text-sm text-muted-foreground mt-2 text-center">Upload Image</span>
                                                 </Label>
                                             )}
-                                            <Input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={uploadProgress !== null}/>
+                                            <Input id="portfolio-upload" type="file" className="sr-only" onChange={(e) => handleFileChange(e, 'portfolio')} accept="image/png, image/jpeg, image/webp" disabled={portfolioUploadProgress !== null}/>
                                         </div>
                                         <p className="text-xs text-muted-foreground">Max 5MB per image. PNG, JPG, WebP.</p>
                                     </div>
@@ -409,7 +456,7 @@ export default function ProfileEditPage() {
                         
                         <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline" onClick={() => router.push('/profile')}>Cancel</Button>
-                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving || uploadProgress !== null}>
+                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving || portfolioUploadProgress !== null || avatarUploadProgress !== null}>
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Save Changes
                             </Button>
