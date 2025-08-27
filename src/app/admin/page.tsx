@@ -1,8 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, Workflow, HandCoins, Star, Briefcase } from "lucide-react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { OverviewChart } from "./overview-chart";
+import { subMonths, format } from 'date-fns';
+
 
 async function getStats() {
     const usersQuery = collection(db, "users");
@@ -25,9 +28,43 @@ async function getStats() {
     return { totalUsers, totalWorkers, totalBookings, totalReviews };
 }
 
+async function getMonthlyBookingData() {
+    const today = new Date();
+    const sixMonthsAgo = subMonths(today, 5); // 5 to include the current month fully
+    sixMonthsAgo.setDate(1); // Start from the beginning of the month
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const q = query(
+        collection(db, "bookings"),
+        where("createdAt", ">=", Timestamp.fromDate(sixMonthsAgo))
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // Initialize months data
+    const monthlyData: { [key: string]: number } = {};
+    for (let i = 5; i >= 0; i--) {
+        const date = subMonths(today, i);
+        const monthName = format(date, 'MMM');
+        monthlyData[monthName] = 0;
+    }
+    
+    querySnapshot.forEach(doc => {
+        const booking = doc.data();
+        const bookingDate = booking.createdAt.toDate();
+        const monthName = format(bookingDate, 'MMM');
+        if (monthName in monthlyData) {
+            monthlyData[monthName]++;
+        }
+    });
+
+    return Object.entries(monthlyData).map(([name, total]) => ({ name, total }));
+}
+
 
 export default async function AdminDashboard() {
   const { totalUsers, totalWorkers, totalBookings, totalReviews } = await getStats();
+  const bookingData = await getMonthlyBookingData();
 
   return (
     <div>
@@ -77,13 +114,11 @@ export default async function AdminDashboard() {
       <div className="mt-8">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>An overview of recent sign-ups and job postings.</CardDescription>
+            <CardTitle>Overview</CardTitle>
+            <CardDescription>Monthly booking trends for the last 6 months.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-40 flex items-center justify-center border-2 border-dashed rounded-lg bg-gray-50 dark:bg-gray-800">
-                <p className="text-muted-foreground">Recent activity feed will be shown here.</p>
-            </div>
+          <CardContent className="pl-2">
+            <OverviewChart data={bookingData} />
           </CardContent>
         </Card>
       </div>
