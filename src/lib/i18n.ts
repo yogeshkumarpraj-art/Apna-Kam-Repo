@@ -52,7 +52,7 @@ export const translations = {
     howItWorksTitle: 'अपना काम कैसे काम करता है?',
     howItWorksSubtitle: 'तीन सरल चरणों में कुशल श्रमिकों को ढूंढें और किराए पर लें।',
     howItWorksStep1Title: 'खोजें',
-    howItWorksStep1Desc: 'अपनी जरूरत की सर्विस और लोकेशन सर्च करें',
+    howItWorksStep1Desc: ' अपनी जरूरत की सर्विस और लोकेशन सर्च करें',
     howItWorksStep2Title: 'संपर्क करें',
     howItWorksStep2Desc: 'अपने पसंदीदा वर्कर को चुनकर कॉन्टैक्ट करें',
     howItWorksStep3Title: 'काम पूरा करें',
