@@ -48,7 +48,7 @@ export default function WorkerProfilePage() {
     const [reviewSummary, setReviewSummary] = useState('');
     const [isSummarizing, setIsSummarizing] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [contactRevealed, setContactRevealed] = useState(true);
+    const [contactRevealed, setContactRevealed] = useState(true); // Changed for soft launch
     const [isFavorite, setIsFavorite] = useState(false);
     const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
     const [isBooking, setIsBooking] = useState(false);
@@ -69,7 +69,7 @@ export default function WorkerProfilePage() {
 
                 if (workerDocSnap.exists()) {
                     const data = workerDocSnap.data();
-                    setWorker({
+                    const workerData: Worker = {
                         id: workerDocSnap.id,
                         name: data.name,
                         category: data.category,
@@ -84,8 +84,13 @@ export default function WorkerProfilePage() {
                         rating: data.rating || 0,
                         reviewCount: data.reviewCount || 0,
                         isFavorite: false, // Will be updated below
-                        contact: { phone: data.phone, email: data.email },
-                    });
+                    };
+                    
+                    // Securely add contact info only if revealed
+                    if (contactRevealed) {
+                        workerData.contact = { phone: data.phone, email: data.email };
+                    }
+                    setWorker(workerData);
                 }
 
                 // Fetch reviews for the worker
@@ -133,7 +138,7 @@ export default function WorkerProfilePage() {
         };
 
         fetchWorkerAndReviews();
-    }, [id, user, toast]);
+    }, [id, user, toast, contactRevealed]);
 
     const handlePayment = async () => {
         if (!user || !worker) return;
@@ -411,11 +416,11 @@ export default function WorkerProfilePage() {
                                     </AlertDescription>
                                 </Alert>
                                 
-                                {contactRevealed ? (
+                                {contactRevealed && worker.contact ? (
                                     <div className="space-y-2">
                                         <h3 className="font-bold text-center mb-2">Contact Details</h3>
-                                        <Button variant="outline" className="w-full justify-start"><Phone className="mr-2 h-4 w-4" /> {worker.contact?.phone}</Button>
-                                        <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {worker.contact?.email}</Button>
+                                        <Button variant="outline" className="w-full justify-start"><Phone className="mr-2 h-4 w-4" /> {worker.contact.phone}</Button>
+                                        <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {worker.contact.email}</Button>
                                     </div>
                                 ) : (
                                   <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={handlePayment} disabled={isPaying}>
