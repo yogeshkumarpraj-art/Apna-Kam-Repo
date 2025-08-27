@@ -8,9 +8,9 @@ import type { Worker, Review } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2 } from 'lucide-react';
+import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,7 +39,9 @@ import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { createBooking } from '@/app/bookings/actions';
+import { summarizeReviews } from '@/ai/flows/summarize-reviews';
 import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 export default function WorkerProfilePage() {
@@ -50,6 +52,8 @@ export default function WorkerProfilePage() {
 
     const [worker, setWorker] = useState<Worker | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewSummary, setReviewSummary] = useState('');
+    const [isSummarizing, setIsSummarizing] = useState(true);
     const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -63,6 +67,7 @@ export default function WorkerProfilePage() {
         const fetchWorkerAndReviews = async () => {
             if (!id) return;
             setLoading(true);
+            setIsSummarizing(true);
             try {
                 // Fetch worker data
                 const workerDocRef = doc(db, "users", id as string);
@@ -112,6 +117,16 @@ export default function WorkerProfilePage() {
                         setIsFavorite(userData.favorites?.includes(id as string));
                     }
                 }
+                 // Generate review summary
+                if (reviewsList.length > 0) {
+                    summarizeReviews({ workerId: id as string })
+                        .then(result => setReviewSummary(result.summary))
+                        .catch(err => console.error("Failed to get summary", err))
+                        .finally(() => setIsSummarizing(false));
+                } else {
+                    setIsSummarizing(false);
+                }
+
             } catch (error) {
                 console.error("Error fetching worker data: ", error);
                  toast({ title: "Error", description: "Could not fetch worker data.", variant: "destructive" });
@@ -259,6 +274,31 @@ export default function WorkerProfilePage() {
 
                         <div>
                             <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({worker.reviewCount})</h2>
+
+                            {worker.reviewCount > 1 && (
+                                <Card className="mb-6 bg-accent/20 border-accent/50">
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                            <Sparkles className="w-5 h-5 text-accent" />
+                                            AI Generated Summary
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {isSummarizing ? (
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-3/4" />
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground italic">
+                                                &quot;{reviewSummary}&quot;
+                                            </p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
+
                             <div className="space-y-6">
                                 {reviews.length > 0 ? reviews.map(review => (
                                     <div key={review.id} className="flex gap-4">
