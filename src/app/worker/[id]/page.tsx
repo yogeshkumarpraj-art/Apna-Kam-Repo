@@ -32,7 +32,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -56,7 +56,7 @@ export default function WorkerProfilePage() {
     const [reviewSummary, setReviewSummary] = useState('');
     const [isSummarizing, setIsSummarizing] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [contactRevealed, setContactRevealed] = useState(false);
+    const [contactRevealed, setContactRevealed = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
     const [isBooking, setIsBooking] = useState(false);
@@ -144,7 +144,12 @@ export default function WorkerProfilePage() {
 
 
     const handleRevealContact = () => {
-        // Here you would implement the payment flow
+        // In a real app, you would handle the payment logic here before revealing contact.
+        // For this demo, we'll just simulate success.
+        toast({
+            title: "Payment Successful!",
+            description: `You can now contact ${worker?.name}.`
+        })
         setContactRevealed(true);
     };
 
@@ -362,21 +367,22 @@ export default function WorkerProfilePage() {
                                 
                                 {contactRevealed ? (
                                     <div className="space-y-2">
+                                        <h3 className="font-bold text-center mb-2">Contact Details</h3>
                                         <Button variant="outline" className="w-full justify-start"><Phone className="mr-2 h-4 w-4" /> {worker.contact?.phone}</Button>
                                         <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {worker.contact?.email}</Button>
                                     </div>
                                 ) : (
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                      <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                                          Reveal Contact (₹50)
+                                      <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                                          Reveal Contact & Pay ₹50
                                       </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
-                                        <AlertDialogTitle>Confirm Payment</AlertDialogTitle>
+                                        <AlertDialogTitle>Unlock Worker Contact</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          You are about to pay ₹50 to reveal the contact details for {worker.name}. This action is non-refundable.
+                                          To ensure genuine inquiries, we charge a small fee of ₹50 to reveal the contact details for {worker.name}. This is a one-time, non-refundable payment.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
@@ -438,3 +444,5 @@ export default function WorkerProfilePage() {
         </div>
     );
 }
+
+    
