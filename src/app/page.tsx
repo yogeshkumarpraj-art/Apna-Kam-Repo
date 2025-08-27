@@ -329,7 +329,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="results" className="bg-white dark:bg-card py-16">
+        <section id="results" className="bg-slate-50 dark:bg-slate-900 py-16">
           <div className="container mx-auto px-4">
               <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
                 {t.featuredWorkers}
@@ -387,3 +387,6 @@ export default function HomePage() {
 
     
 
+
+
+    
