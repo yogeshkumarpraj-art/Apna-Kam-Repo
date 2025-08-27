@@ -72,7 +72,7 @@ export default function ContactPage() {
                   </p>
                   <p className="flex items-start gap-4">
                     <MapPin className="w-6 h-6 text-primary mt-1" />
-                    <span>Apna Kam Headquarters<br />New Delhi, India</span>
+                    <span>Apna Kaushal Headquarters<br />New Delhi, India</span>
                   </p>
                 </div>
               </div>
