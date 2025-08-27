@@ -27,6 +27,7 @@ import { translations } from '@/lib/i18n';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import { Footer } from '@/components/footer';
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
@@ -45,52 +46,6 @@ const HowItWorksStep = ({ num, title, description, className }: { num: number, t
         </Card>
     </div>
 );
-
-const Footer = () => {
-    const { language } = useLanguage();
-    const t = translations[language];
-
-    return (
-    <footer className="bg-slate-800 text-slate-300 pt-12 pb-4">
-        <div className="container mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div>
-                    <h4 className="font-headline text-xl text-white mb-3">Apna Kam</h4>
-                    <p className="text-sm">
-                        {t.footerDescription}
-                    </p>
-                </div>
-                <div>
-                    <h5 className="font-headline text-lg text-white mb-3">{t.links}</h5>
-                    <ul className="space-y-2 text-sm">
-                        <li><Link href="/" className="hover:text-primary transition-colors">{t.home}</Link></li>
-                        <li><Link href="/about" className="hover:text-primary transition-colors">{t.aboutUs}</Link></li>
-                         <li><Link href="/blog" className="hover:text-primary transition-colors">{t.blog}</Link></li>
-                        <li><Link href="/contact" className="hover:text-primary transition-colors">{t.contact}</Link></li>
-                    </ul>
-                </div>
-                <div>
-                    <h5 className="font-headline text-lg text-white mb-3">{t.legal}</h5>
-                    <ul className="space-y-2 text-sm">
-                        <li><Link href="/policy" className="hover:text-primary transition-colors">{t.privacyPolicy}</Link></li>
-                        <li><Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
-                        <li><Link href="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
-                    </ul>
-                </div>
-                 <div>
-                    <h5 className="font-headline text-lg text-white mb-3">{t.contactUs}</h5>
-                    <ul className="space-y-2 text-sm">
-                        <li className="flex items-center gap-2"><MapPin size={16}/> New Delhi, India</li>
-                        <li className="flex items-center gap-2"><Phone size={16}/> +91 6376304014</li>
-                    </ul>
-                </div>
-            </div>
-            <div className="mt-8 border-t border-slate-700 pt-4 text-center text-sm">
-                <p>&copy; {new Date().getFullYear()} Apna Kam. {t.allRightsReserved}</p>
-            </div>
-        </div>
-    </footer>
-)}
 
 const fetchAllWorkers = async (): Promise<Worker[]> => {
     const q = query(collection(db, "users"), where("isWorker", "==", true), where("isApproved", "==", true));
