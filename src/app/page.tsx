@@ -60,7 +60,7 @@ const Footer = () => {
                 <div>
                     <h5 className="font-headline text-lg text-white mb-3">{t.links}</h5>
                     <ul className="space-y-2 text-sm">
-                        <li><Link href="#" className="hover:text-primary transition-colors">{t.home}</Link></li>
+                        <li><Link href="/" className="hover:text-primary transition-colors">{t.home}</Link></li>
                         <li><Link href="#" className="hover:text-primary transition-colors">{t.aboutUs}</Link></li>
                          <li><Link href="/blog" className="hover:text-primary transition-colors">{t.blog}</Link></li>
                         <li><Link href="#" className="hover:text-primary transition-colors">{t.contact}</Link></li>
@@ -285,7 +285,7 @@ export default function HomePage() {
                 { name: t.electrician, icon: Wrench, href:"#" },
                 { name: t.carpenter, icon: Wrench, href:"#" },
                 { name: t.painter, icon: Paintbrush, href:"#" },
-                { name: 'AC Service', icon: Wrench, href:"#" },
+                { name: t.acService, icon: Wrench, href:"#" },
                 { name: t.homeCleaning, icon: Sprout, href:"#" },
               ].map((cat) => (
                 <Link key={cat.name} href={cat.href} className="group">

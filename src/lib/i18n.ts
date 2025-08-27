@@ -36,6 +36,7 @@ export const translations = {
     featuredWorkers: 'Featured Workers',
     painter: 'Painter',
     homeCleaning: 'Home Cleaning',
+    acService: 'AC Service',
   },
   hi: {
     forWorkers: 'श्रमिकों के लिए',
@@ -48,7 +49,7 @@ export const translations = {
     skillCategories: 'कौशल श्रेणियाँ',
     noWorkersFound: 'कोई श्रमिक नहीं मिला',
     tryAdjustingSearch: 'अपनी खोज या फ़िल्टर समायोजित करने का प्रयास करें।',
-    howItWorksTitle: 'Apna Kam कैसे काम करता है?',
+    howItWorksTitle: 'अपना काम कैसे काम करता है?',
     howItWorksSubtitle: 'तीन सरल चरणों में कुशल श्रमिकों को ढूंढें और किराए पर लें।',
     howItWorksStep1Title: 'खोजें',
     howItWorksStep1Desc: 'अपनी जरूरत की सर्विस और लोकेशन सर्च करें',
@@ -73,5 +74,6 @@ export const translations = {
     featuredWorkers: 'फीचर्ड वर्कर्स',
     painter: 'पेंटर',
     homeCleaning: 'घर की सफाई',
+    acService: 'एसी सर्विस',
   },
 };
