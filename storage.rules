@@ -1,18 +1,21 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read access to all files.
-    // This allows anyone to view profile pictures and portfolio images.
+    // Allow public read access to all files so anyone can see profile pictures and portfolio images.
     match /{allPaths=**} {
       allow read;
     }
 
-    // Allow authenticated users to write (create, update, delete) to their own user-specific folders.
-    // The path is structured as /avatar/{userId}/{fileName} or /portfolio/{userId}/{fileName}.
-    // This rule ensures that a user can only manage their own files.
-    match /{imageType}/{userId}/{allPaths=**} {
+    // Allow a user to write to their own directory inside the 'avatars' folder.
+    // The path matches: /avatars/{userId}/<any_file_name>
+    match /avatar/{userId}/{allPaths=**} {
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow a user to write to their own directory inside the 'portfolio' folder.
+    // The path matches: /portfolio/{userId}/<any_file_name>
+    match /portfolio/{userId}/{allPaths=**} {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
