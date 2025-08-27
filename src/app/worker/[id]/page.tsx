@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -47,7 +48,7 @@ export default function WorkerProfilePage() {
     const [reviewSummary, setReviewSummary] = useState('');
     const [isSummarizing, setIsSummarizing] = useState(true);
     const [loading, setLoading] = useState(true);
-    const [contactRevealed, setContactRevealed] = useState(false);
+    const [contactRevealed, setContactRevealed] = useState(true);
     const [isFavorite, setIsFavorite] = useState(false);
     const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
     const [isBooking, setIsBooking] = useState(false);
