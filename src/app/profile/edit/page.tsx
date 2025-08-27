@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Worker } from '@/lib/types';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc, getDoc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore"; 
+import { doc, setDoc, getDoc, updateDoc, arrayRemove } from "firebase/firestore"; 
 import { db, storage } from '@/lib/firebase';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { useRouter } from 'next/navigation';
@@ -210,20 +210,20 @@ export default function ProfileEditPage() {
 
         try {
             const userRef = doc(db, "users", user.uid);
-            const dataToSave = {
+            const dataToSave: any = {
                 name,
                 email,
                 location,
                 pincode,
-                category: isWorker ? category : '',
-                price: Number(price) || 0,
-                priceType,
-                skills: isWorker ? currentSkills : [],
-                description: isWorker ? workerDetails : '',
                 uid: user.uid,
                 phone: user.phoneNumber,
                 isWorker: isWorker,
-                portfolio: isWorker ? portfolio : [], // Save the portfolio array
+                category: isWorker ? category : '',
+                price: isWorker ? Number(price) || 0 : 0,
+                priceType: isWorker ? priceType : 'job',
+                skills: isWorker ? currentSkills : [],
+                description: isWorker ? workerDetails : '',
+                portfolio: isWorker ? portfolio : [],
             };
 
             await setDoc(userRef, dataToSave, { merge: true });
