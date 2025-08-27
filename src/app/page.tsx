@@ -26,6 +26,7 @@ import { useLanguage } from '@/context/language-context';
 import { translations } from '@/lib/i18n';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { cn } from '@/lib/utils';
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
@@ -217,13 +218,13 @@ export default function HomePage() {
   }
   
   const popularCategories = [
-    { name: t.plumbing, dbCategory: 'Plumber (Nalband)', icon: Wrench },
-    { name: t.electrician, dbCategory: 'Electrician (Bijli Mistri)', icon: Zap },
-    { name: t.carpenter, dbCategory: 'Carpenter (Barhai)', icon: Hammer },
-    { name: t.painter, dbCategory: 'Painter (Rang Saz)', icon: Paintbrush },
-    { name: t.acService, dbCategory: 'AC Repair & Service', icon: AirVent },
-    { name: t.homeCleaning, dbCategory: 'Home Deep Cleaning', icon: Sparkles },
-    { name: t.carWasher, dbCategory: 'Car/Bike Cleaning', icon: Car },
+    { name: t.plumbing, dbCategory: 'Plumber (Nalband)', icon: Wrench, bgColor: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'text-blue-600 dark:text-blue-300' },
+    { name: t.electrician, dbCategory: 'Electrician (Bijli Mistri)', icon: Zap, bgColor: 'bg-yellow-100 dark:bg-yellow-900/30', iconColor: 'text-yellow-600 dark:text-yellow-300' },
+    { name: t.carpenter, dbCategory: 'Carpenter (Barhai)', icon: Hammer, bgColor: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-600 dark:text-orange-300' },
+    { name: t.painter, dbCategory: 'Painter (Rang Saz)', icon: Paintbrush, bgColor: 'bg-purple-100 dark:bg-purple-900/30', iconColor: 'text-purple-600 dark:text-purple-300' },
+    { name: t.acService, dbCategory: 'AC Repair & Service', icon: AirVent, bgColor: 'bg-cyan-100 dark:bg-cyan-900/30', iconColor: 'text-cyan-600 dark:text-cyan-300' },
+    { name: t.homeCleaning, dbCategory: 'Home Deep Cleaning', icon: Sparkles, bgColor: 'bg-green-100 dark:bg-green-900/30', iconColor: 'text-green-600 dark:text-green-300' },
+    { name: t.carWasher, dbCategory: 'Car/Bike Cleaning', icon: Car, bgColor: 'bg-red-100 dark:bg-red-900/30', iconColor: 'text-red-600 dark:text-red-300' },
   ];
 
   return (
@@ -316,11 +317,11 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6">
               {popularCategories.map((cat) => (
                 <div key={cat.name} className="group cursor-pointer" onClick={() => handleCategoryClick(cat.dbCategory)}>
-                  <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 card-glow h-full">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                        <cat.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+                  <Card className={cn("text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 h-full border-0", cat.bgColor)}>
+                    <div className="w-16 h-16 rounded-full bg-background/50 flex items-center justify-center mx-auto mb-4 transition-colors">
+                        <cat.icon className={cn("h-8 w-8 transition-transform group-hover:scale-110", cat.iconColor)} />
                     </div>
-                    <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">{cat.name}</h3>
+                    <h3 className={cn("font-semibold text-lg transition-colors", cat.iconColor.replace('text', 'text'))}>{cat.name}</h3>
                   </Card>
                 </div>
               ))}
@@ -382,4 +383,6 @@ export default function HomePage() {
     </div>
   );
     
+    
+
     
