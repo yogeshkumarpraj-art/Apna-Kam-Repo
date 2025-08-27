@@ -20,12 +20,12 @@ Ek acha rajmistri sirf eentein jodna nahi jaanta, balki usmein aur bhi bahut saa
 Ab sawaal yeh hai ki aap ek acha rajmistri kaise khoj sakte hain? Yahan kuch tips diye gaye hain:
 
 1.  **References aur Recommendations:** Apne friends, family, aur neighbours se recommendations maange. Agar unhone kisi rajmistri ke saath kaam kiya hai aur unka experience achha raha hai, toh unse contact details zaroor lein.
-2.  **Online Reviews:** Aajkal internet sab kuch hai! Online platforms par rajmistri ke reviews aur ratings check karein. Apna Kaushal par aapko verified aur experienced rajmistri mil jayenge, jinke reviews aap dekh sakte hain.
+2.  **Online Reviews:** Aajkal internet sab kuch hai! Online platforms par rajmistri ke reviews aur ratings check karein. Apna Kam par aapko verified aur experienced rajmistri mil jayenge, jinke reviews aap dekh sakte hain.
 3.  **Interview:** Rajmistri ko hire karne se pehle unse interview zaroor karein. Unse unke experience, skills, aur past projects ke baare mein poochhein. Unhe apne project ke baare mein detail mein samjhayein aur dekhein ki woh aapki requirements ko kitna samajh paate hain.
 4.  **Written Contract:** Hamesha rajmistri ke saath ek written contract karein. Contract mein project ka scope, timeline, payment terms, aur other important details clearly mention hone chahiye.
 
-### Apna Kaushal: Aapka Trusted Partner
+### Apna Kam: Aapka Trusted Partner
 
-Ek acha rajmistri dhundhna mushkil ho sakta hai, lekin **Apna Kaushal par**, yeh **ekdum aasan** hai! Hum aapko verified aur experienced rajmistri se connect karte hain, jo aapke ghar banane ke sapne ko sach karne mein madad kar sakte hain. Aaj hi **Apna Kaushal par** register karein aur apne area mein best rajmistri khoje!
+Ek acha rajmistri dhundhna mushkil ho sakta hai, lekin **Apna Kam par**, yeh **ekdum aasan** hai! Hum aapko verified aur experienced rajmistri se connect karte hain, jo aapke ghar banane ke sapne ko sach karne mein madad kar sakte hain. Aaj hi **Apna Kam par** register karein aur apne area mein best rajmistri khoje!
 
-Ghar banana ek bada investment hai, isliye sahi rajmistri ko choose karna bahut important hai. Upar diye gaye tips ko follow karke aur **Apna Kaushal par** reliable professionals ko dhoondhkar, aap apne ghar ko ek mazboot aur sundar bana sakte hain. Toh, deri kis baat ki? Apna sapno ka ghar banane ka safar aaj hi shuru karein!
+Ghar banana ek bada investment hai, isliye sahi rajmistri ko choose karna bahut important hai. Upar diye gaye tips ko follow karke aur **Apna Kam par** reliable professionals ko dhoondhkar, aap apne ghar ko ek mazboot aur sundar bana sakte hain. Toh, deri kis baat ki? Apna sapno ka ghar banane ka safar aaj hi shuru karein!
