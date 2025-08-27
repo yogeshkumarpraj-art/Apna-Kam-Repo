@@ -28,8 +28,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
 import { Footer } from '@/components/footer';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import Autoplay from "embla-carousel-autoplay";
 
 const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
@@ -85,14 +83,6 @@ export default function HomePage() {
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
-
-    const heroImages = [
-        { src: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1470&auto=format&fit=crop", hint: "construction mason" },
-        { src: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1469&auto=format&fit=crop", hint: "electrician working" },
-        { src: "https://images.unsplash.com/photo-1605649487212-47bdab064a3e?q=80&w=1374&auto=format&fit=crop", hint: "car washing" },
-        { src: "https://images.unsplash.com/photo-1593344484962-796b55d95a2a?q=80&w=1470&auto=format&fit=crop", hint: "plumber fixing" },
-    ];
-
 
   useEffect(() => {
     // Fetch initial set of all approved workers on page load
@@ -208,37 +198,16 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-1">
-        <section className="relative w-full overflow-hidden">
-            <Carousel 
-                className="w-full"
-                plugins={[
-                    Autoplay({
-                        delay: 5000,
-                        stopOnInteraction: true,
-                    }),
-                ]}
-                opts={{
-                    loop: true,
-                }}
-            >
-                <CarouselContent>
-                    {heroImages.map((image, index) => (
-                        <CarouselItem key={index}>
-                            <div className="h-[500px] sm:h-[600px] w-full relative">
-                                <Image
-                                    src={image.src}
-                                    alt={`Hero background ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                    data-ai-hint={image.hint}
-                                    priority={index === 0}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
-                            </div>
-                        </CarouselItem>
-                    ))}
-                </CarouselContent>
-            </Carousel>
+        <section className="relative w-full h-[500px] sm:h-[600px] overflow-hidden">
+            <Image
+                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"
+                alt="Collage of various skilled workers"
+                fill
+                className="object-cover"
+                data-ai-hint="skilled workers collage"
+                priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
             
             <div className="absolute inset-0 flex flex-col justify-center items-center text-white text-center p-4">
                 <div className="max-w-3xl mx-auto">
@@ -424,5 +393,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    
