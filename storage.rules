@@ -1,14 +1,21 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow users to upload to their own portfolio directory only
+    // Allow anyone to read portfolio images, as they are public.
     match /portfolio/{userId}/{allPaths=**} {
       allow read;
-      allow write: if request.auth != null && request.auth.uid == userId
-                   && request.resource.size < 5 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Allow authenticated users to write to their own portfolio folder only.
+    // They must be logged in (request.auth != null).
+    // Their UID must match the folder name (request.auth.uid == userId).
+    // The file must be an image (matches 'image/.*').
+    // The file size must be less than 5MB.
+    match /portfolio/{userId}/{fileName} {
+       allow write: if request.auth != null && request.auth.uid == userId
+                    && request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
     }
   }
 }
