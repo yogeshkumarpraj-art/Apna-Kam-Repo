@@ -18,9 +18,8 @@ export interface Worker {
     phone: string;
     email: string;
   };
-  aadharNumber?: string;
-  panNumber?: string;
-  drivingLicense?: string;
+  verificationIdType?: 'Aadhar' | 'PAN' | 'DrivingLicense';
+  verificationIdNumber?: string;
 }
 
 export interface Review {
@@ -46,3 +45,5 @@ export interface Booking {
     createdAt: Date;
     hasBeenReviewed?: boolean;
 }
+
+    

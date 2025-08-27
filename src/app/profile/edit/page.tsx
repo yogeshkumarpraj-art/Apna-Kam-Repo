@@ -32,6 +32,8 @@ const skillCategories = [
 
 const MAX_IMAGE_SIZE_MB = 5;
 
+type VerificationIdType = "Aadhar" | "PAN" | "DrivingLicense";
+
 export default function ProfileEditPage() {
     const { user } = useAuth();
     const { toast } = useToast();
@@ -59,9 +61,57 @@ export default function ProfileEditPage() {
     const [currentSkills, setCurrentSkills] = useState<string[]>([]);
     const [newSkill, setNewSkill] = useState('');
     const [portfolio, setPortfolio] = useState<Worker['portfolio']>([]);
-    const [aadharNumber, setAadharNumber] = useState('');
-    const [panNumber, setPanNumber] = useState('');
-    const [drivingLicense, setDrivingLicense] = useState('');
+    
+    // Verification state
+    const [verificationIdType, setVerificationIdType] = useState<VerificationIdType>("Aadhar");
+    const [verificationIdNumber, setVerificationIdNumber] = useState('');
+    const [verificationError, setVerificationError] = useState<string | null>(null);
+
+    const idValidationConfig = {
+        "Aadhar": {
+            regex: /^\d{12}$/,
+            errorMessage: "Aadhar number must be 12 digits.",
+            placeholder: "XXXX XXXX XXXX",
+            maxLength: 12
+        },
+        "PAN": {
+            regex: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+            errorMessage: "Invalid PAN card format.",
+            placeholder: "ABCDE1234F",
+            maxLength: 10
+        },
+        "DrivingLicense": {
+            regex: /^[A-Z0-9\s-]{8,20}$/i,
+            errorMessage: "Invalid Driving License format.",
+            placeholder: "e.g., DL14 20110012345",
+            maxLength: 20
+        }
+    };
+    
+    const validateId = (type: VerificationIdType, value: string) => {
+        if (!value) {
+            setVerificationError(null);
+            return;
+        }
+        if (!idValidationConfig[type].regex.test(value)) {
+            setVerificationError(idValidationConfig[type].errorMessage);
+        } else {
+            setVerificationError(null);
+        }
+    };
+    
+    const handleVerificationNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setVerificationIdNumber(value);
+        validateId(verificationIdType, value);
+    };
+
+    const handleVerificationTypeChange = (value: string) => {
+        const type = value as VerificationIdType;
+        setVerificationIdType(type);
+        // Re-validate with the new type
+        validateId(type, verificationIdNumber);
+    };
 
     useEffect(() => {
         if (user) {
@@ -85,9 +135,8 @@ export default function ProfileEditPage() {
                     setCurrentSkills(data.skills || []);
                     setWorkerDetails(data.description || '');
                     setPortfolio(data.portfolio || []);
-                    setAadharNumber(data.aadharNumber || '');
-                    setPanNumber(data.panNumber || '');
-                    setDrivingLicense(data.drivingLicense || '');
+                    setVerificationIdType(data.verificationIdType || 'Aadhar');
+                    setVerificationIdNumber(data.verificationIdNumber || '');
                 } else {
                     // Pre-fill from auth if no profile exists
                     setName(user.displayName || '');
@@ -231,6 +280,12 @@ export default function ProfileEditPage() {
             toast({ title: "Not logged in", description: "You must be logged in to save.", variant: "destructive" });
             return;
         }
+
+        if (verificationError) {
+             toast({ title: "Invalid ID", description: "Please correct the verification ID number before saving.", variant: "destructive" });
+            return;
+        }
+
         setIsSaving(true);
 
         const isWorker = category !== 'customer' && !!category;
@@ -252,9 +307,8 @@ export default function ProfileEditPage() {
                 skills: isWorker ? currentSkills : [],
                 description: isWorker ? workerDetails : '',
                 portfolio: isWorker ? portfolio : [],
-                aadharNumber: isWorker ? aadharNumber : '',
-                panNumber: isWorker ? panNumber : '',
-                drivingLicense: isWorker ? drivingLicense : '',
+                verificationIdType: isWorker ? verificationIdType : null,
+                verificationIdNumber: isWorker ? verificationIdNumber : null,
                 // Also update the photoURL in auth for consistency if it changed
                 ...(user.photoURL !== avatar && { photoURL: avatar }),
             };
@@ -407,16 +461,28 @@ export default function ProfileEditPage() {
                                         <p className="text-sm text-muted-foreground">Provide your ID details to build trust with customers. This information will not be shown publicly.</p>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="aadhar">Aadhar Number (12 digits)</Label>
-                                                <Input id="aadhar" value={aadharNumber} onChange={e => setAadharNumber(e.target.value)} placeholder="XXXX XXXX XXXX" maxLength={12}/>
+                                                <Label htmlFor="id-type">ID Type</Label>
+                                                <Select value={verificationIdType} onValueChange={handleVerificationTypeChange}>
+                                                    <SelectTrigger id="id-type">
+                                                        <SelectValue placeholder="Select ID Type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="Aadhar">Aadhar Card</SelectItem>
+                                                        <SelectItem value="PAN">PAN Card</SelectItem>
+                                                        <SelectItem value="DrivingLicense">Driving License</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                              <div className="space-y-2">
-                                                <Label htmlFor="pan">PAN Card Number</Label>
-                                                <Input id="pan" value={panNumber} onChange={e => setPanNumber(e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10}/>
-                                            </div>
-                                             <div className="space-y-2 md:col-span-2">
-                                                <Label htmlFor="dl">Driving License Number</Label>
-                                                <Input id="dl" value={drivingLicense} onChange={e => setDrivingLicense(e.target.value.toUpperCase())} placeholder="e.g., DL14 20110012345"/>
+                                                <Label htmlFor="id-number">ID Number</Label>
+                                                <Input 
+                                                    id="id-number" 
+                                                    value={verificationIdNumber} 
+                                                    onChange={handleVerificationNumberChange} 
+                                                    placeholder={idValidationConfig[verificationIdType].placeholder}
+                                                    maxLength={idValidationConfig[verificationIdType].maxLength}
+                                                />
+                                                {verificationError && <p className="text-xs text-destructive">{verificationError}</p>}
                                             </div>
                                         </div>
                                     </div>
@@ -499,7 +565,7 @@ export default function ProfileEditPage() {
                         
                         <div className="flex justify-end gap-2 pt-4">
                             <Button variant="outline" onClick={() => router.push('/profile')}>Cancel</Button>
-                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving || portfolioUploadProgress !== null || avatarUploadProgress !== null}>
+                            <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleSaveChanges} disabled={isSaving || portfolioUploadProgress !== null || avatarUploadProgress !== null || verificationError !== null}>
                                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Save Changes
                             </Button>
@@ -510,3 +576,5 @@ export default function ProfileEditPage() {
         </div>
     );
 }
+
+    
