@@ -32,11 +32,11 @@ const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
 
-const HowItWorksStep = ({ num, title, description }: { num: number, title: string, description: string }) => (
+const HowItWorksStep = ({ num, title, description, className }: { num: number, title: string, description: string, className?: string }) => (
     <div className="[perspective:1000px]">
-        <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 hover:[transform:rotateX(10deg)]">
+        <Card className={cn("text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 hover:[transform:rotateX(10deg)] h-full", className)}>
             <CardContent className="p-0">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-foreground text-xl font-bold">
                     {num}
                 </div>
                 <h3 className="text-xl font-bold mb-2 font-headline">{title}</h3>
@@ -234,7 +234,7 @@ export default function HomePage() {
         <section className="relative py-20 sm:py-28 text-white">
             <div className="absolute inset-0">
                 <Image 
-                    src="https://placehold.co/1200x400/1E40AF/FFFFFF?text=Apna+Kam&font=sans-serif"
+                    src="https://placehold.co/1200x400/1e40af/FFFFFF?text=Apna+Kam"
                     alt="Hero background"
                     fill
                     className="object-cover"
@@ -372,9 +372,9 @@ export default function HomePage() {
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-                   <HowItWorksStep num={1} title={t.howItWorksStep1Title} description={t.howItWorksStep1Desc} />
-                   <HowItWorksStep num={2} title={t.howItWorksStep2Title} description={t.howItWorksStep2Desc} />
-                   <HowItWorksStep num={3} title={t.howItWorksStep3Title} description={t.howItWorksStep3Desc} />
+                   <HowItWorksStep className="bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-200" num={1} title={t.howItWorksStep1Title} description={t.howItWorksStep1Desc} />
+                   <HowItWorksStep className="bg-green-50 dark:bg-green-900/30 text-green-900 dark:text-green-200" num={2} title={t.howItWorksStep2Title} description={t.howItWorksStep2Desc} />
+                   <HowItWorksStep className="bg-orange-50 dark:bg-orange-900/30 text-orange-900 dark:text-orange-200" num={3} title={t.howItWorksStep3Title} description={t.howItWorksStep3Desc} />
                 </div>
             </div>
         </section>
@@ -386,3 +386,4 @@ export default function HomePage() {
     
 
     
+
