@@ -322,9 +322,9 @@ export default function WorkerProfilePage() {
                             <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({worker.reviewCount})</h2>
 
                             {worker.reviewCount > 1 && (
-                                <Card className="mb-6 bg-accent/20 border-accent/50">
+                                <Card className="mb-6 bg-accent/10 border-accent/30 dark:bg-accent/20 dark:border-accent/50">
                                     <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-lg">
+                                        <CardTitle className="flex items-center gap-2 text-lg text-accent-foreground/80">
                                             <Sparkles className="w-5 h-5 text-accent" />
                                             AI Generated Summary
                                         </CardTitle>
