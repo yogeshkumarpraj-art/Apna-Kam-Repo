@@ -48,7 +48,7 @@ export default function RefundPage() {
             
             <h2>6. Contact Us</h2>
              <p>
-              If you have any questions about our Cancellation & Refund Policy, please contact us at support@apnakam.com.
+              If you have any questions about our Cancellation & Refund Policy, please contact us at yogeshkumarpraj@gmail.com.
             </p>
           </div>
         </div>

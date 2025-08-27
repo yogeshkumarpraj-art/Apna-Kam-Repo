@@ -53,7 +53,7 @@ export default function PolicyPage() {
 
             <h2>6. Contacting Us</h2>
             <p>
-              If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at support@apnakam.com.
+              If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at yogeshkumarpraj@gmail.com.
             </p>
           </div>
         </div>
@@ -61,5 +61,3 @@ export default function PolicyPage() {
     </div>
   );
 }
-
-    

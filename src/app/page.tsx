@@ -81,7 +81,7 @@ const Footer = () => {
                     <h5 className="font-headline text-lg text-white mb-3">{t.contactUs}</h5>
                     <ul className="space-y-2 text-sm">
                         <li className="flex items-center gap-2"><MapPin size={16}/> New Delhi, India</li>
-                        <li className="flex items-center gap-2"><Phone size={16}/> +91 98765 43210</li>
+                        <li className="flex items-center gap-2"><Phone size={16}/> +91 6376304014</li>
                     </ul>
                 </div>
             </div>

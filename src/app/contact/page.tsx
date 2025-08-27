@@ -8,26 +8,40 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Loader2, Mail, MapPin, Phone } from 'lucide-react';
 import { useState } from 'react';
+import { saveContactMessage } from './actions';
 
 export default function ContactPage() {
   const { toast } = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically handle form submission, e.g., send an email or save to a database.
-    // For this example, we'll just show a toast notification.
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We will get back to you shortly.",
-    });
-    setName('');
-    setEmail('');
-    setMessage('');
+    setIsSubmitting(true);
+    
+    try {
+      await saveContactMessage({ name, email, message });
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for contacting us. We will get back to you shortly.",
+      });
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Submission Failed",
+        description: "Could not send your message. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -49,11 +63,11 @@ export default function ContactPage() {
                 <div className="space-y-4 text-lg">
                   <p className="flex items-center gap-4">
                     <Mail className="w-6 h-6 text-primary" />
-                    <span>support@apnakam.com</span>
+                    <span>yogeshkumarpraj@gmail.com</span>
                   </p>
                   <p className="flex items-center gap-4">
                     <Phone className="w-6 h-6 text-primary" />
-                    <span>+91 98765 43210</span>
+                    <span>+91 6376304014</span>
                   </p>
                   <p className="flex items-start gap-4">
                     <MapPin className="w-6 h-6 text-primary mt-1" />
@@ -73,17 +87,20 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isSubmitting} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isSubmitting} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="message">Message</Label>
-                      <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} required />
+                      <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} required disabled={isSubmitting} />
                     </div>
-                    <Button type="submit" className="w-full">Send Message</Button>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Send Message
+                    </Button>
                   </form>
                 </CardContent>
               </Card>
@@ -94,5 +111,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    

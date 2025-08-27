@@ -56,7 +56,7 @@ export default function TermsPage() {
 
              <h2>8. Contact Us</h2>
             <p>
-              If you have any questions about these Terms, please contact us at support@apnakam.com.
+              If you have any questions about these Terms, please contact us at yogeshkumarpraj@gmail.com.
             </p>
           </div>
         </div>
