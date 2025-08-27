@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Loader2, CheckCircle, XCircle, Trash2 } from "lucide-react"
+import { MoreHorizontal, Loader2, CheckCircle, XCircle, Trash2, ShieldCheck } from "lucide-react"
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,8 @@ interface User {
   role: 'Worker' | 'Customer';
   isApproved?: boolean;
   avatar: string;
+  verificationIdType?: string;
+  verificationIdNumber?: string;
 }
 
 export default function UsersPage() {
@@ -59,7 +61,9 @@ export default function UsersPage() {
             email: data.email || 'N/A',
             role: data.isWorker ? 'Worker' : 'Customer',
             isApproved: data.isApproved,
-            avatar: data.avatar || `https://placehold.co/100x100.png`
+            avatar: data.avatar || `https://placehold.co/100x100.png`,
+            verificationIdType: data.verificationIdType,
+            verificationIdNumber: data.verificationIdNumber,
           };
         });
         setUsers(usersList);
@@ -147,6 +151,7 @@ export default function UsersPage() {
                 <TableHead>User</TableHead>
                 <TableHead className="hidden md:table-cell">Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Verification Details</TableHead>
                 <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
@@ -172,6 +177,19 @@ export default function UsersPage() {
                         <Badge variant={status.variant} className={status.className}>
                         {status.text}
                         </Badge>
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                        {user.role === 'Worker' && user.verificationIdType ? (
+                          <div className="flex items-center gap-2">
+                             <ShieldCheck className="h-4 w-4 text-green-600" />
+                             <div>
+                                <p className="font-medium text-xs">{user.verificationIdType}</p>
+                                <p className="text-xs text-muted-foreground">{user.verificationIdNumber}</p>
+                             </div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{user.role === 'Worker' ? 'Not Provided' : 'N/A'}</span>
+                        )}
                     </TableCell>
                     <TableCell>
                         <DropdownMenu>
