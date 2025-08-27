@@ -1,26 +1,38 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, Workflow, HandCoins } from "lucide-react";
+import { Users, Workflow, HandCoins, Star, Briefcase } from "lucide-react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 async function getStats() {
-    const userSnapshot = await getDocs(collection(db, "users"));
-    const totalUsers = userSnapshot.size;
+    const usersQuery = collection(db, "users");
+    const workersQuery = query(collection(db, "users"), where("isWorker", "==", true));
+    const bookingsQuery = collection(db, "bookings");
+    const reviewsQuery = collection(db, "reviews");
 
-    // In a real app, you would fetch jobs and revenue data as well
-    // For now, we'll keep them static
-    return { totalUsers };
+    const [userSnapshot, workerSnapshot, bookingSnapshot, reviewSnapshot] = await Promise.all([
+        getDocs(usersQuery),
+        getDocs(workersQuery),
+        getDocs(bookingsQuery),
+        getDocs(reviewsQuery),
+    ]);
+
+    const totalUsers = userSnapshot.size;
+    const totalWorkers = workerSnapshot.size;
+    const totalBookings = bookingSnapshot.size;
+    const totalReviews = reviewSnapshot.size;
+
+    return { totalUsers, totalWorkers, totalBookings, totalReviews };
 }
 
 
 export default async function AdminDashboard() {
-  const { totalUsers } = await getStats();
+  const { totalUsers, totalWorkers, totalBookings, totalReviews } = await getStats();
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6 font-headline">Admin Dashboard</h1>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -31,24 +43,34 @@ export default async function AdminDashboard() {
             <p className="text-xs text-muted-foreground">Registered users on the platform</p>
           </CardContent>
         </Card>
-        <Card>
+         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-            <Workflow className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Workers</CardTitle>
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">573</div>
-            <p className="text-xs text-muted-foreground">(Static Data)</p>
+            <div className="text-2xl font-bold">{totalWorkers}</div>
+            <p className="text-xs text-muted-foreground">Approved and pending workers</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <HandCoins className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+            <Workflow className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹2,54,320</div>
-            <p className="text-xs text-muted-foreground">(Static Data)</p>
+            <div className="text-2xl font-bold">{totalBookings}</div>
+            <p className="text-xs text-muted-foreground">Across all statuses</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalReviews}</div>
+            <p className="text-xs text-muted-foreground">Submitted by customers</p>
           </CardContent>
         </Card>
       </div>
