@@ -5,3 +5,14 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 10
+# Defines secrets that are available as environment variables to the application.
+# You must create the secrets in Secret Manager before you can use them.
+# To create a secret, run:
+#   firebase apphosting:secrets:set <secret-name>
+secretEnvironmentVariables:
+  - key: RAZORPAY_KEY_ID
+    secret: RAZORPAY_KEY_ID
+  - key: RAZORPAY_KEY_SECRET
+    secret: RAZORPAY_KEY_SECRET
+  - key: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
