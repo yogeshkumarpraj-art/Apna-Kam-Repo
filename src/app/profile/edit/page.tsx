@@ -71,7 +71,7 @@ export default function ProfileEditPage() {
                     setEmail(data.email || user.email || '');
                     setLocation(data.location || '');
                     setPincode(data.pincode || '');
-                    setCategory(data.category || (data.isWorker ? '' : 'customer'));
+                    setCategory(data.isWorker ? data.category || '' : 'customer');
                     setPrice(data.price || '');
                     setPriceType(data.priceType || 'job');
                     setCurrentSkills(data.skills || []);
@@ -81,7 +81,7 @@ export default function ProfileEditPage() {
                     // Pre-fill from auth if no profile exists
                     setName(user.displayName || '');
                     setEmail(user.email || '');
-                    setCategory('customer');
+                    setCategory('customer'); // Default new users to customer
                 }
                 setIsFetching(false);
             };
