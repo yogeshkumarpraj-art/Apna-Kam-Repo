@@ -32,15 +32,17 @@ const skillCategories = [
 ];
 
 const HowItWorksStep = ({ num, title, description }: { num: number, title: string, description: string }) => (
-    <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 [perspective:1000px] hover:[transform:rotateX(4deg)]">
-        <CardContent className="p-0">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
-                {num}
-            </div>
-            <h3 className="text-xl font-bold mb-2 font-headline">{title}</h3>
-            <p className="text-muted-foreground">{description}</p>
-        </CardContent>
-    </Card>
+    <div className="[perspective:1000px]">
+        <Card className="text-center p-6 transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20 hover:[transform:rotateX(10deg)]">
+            <CardContent className="p-0">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold">
+                    {num}
+                </div>
+                <h3 className="text-xl font-bold mb-2 font-headline">{title}</h3>
+                <p className="text-muted-foreground">{description}</p>
+            </CardContent>
+        </Card>
+    </div>
 );
 
 const Footer = () => {
@@ -205,7 +207,7 @@ export default function HomePage() {
                     className="object-cover"
                     data-ai-hint="construction workers"
                 />
-                <div className="absolute inset-0 bg-black/50"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30"></div>
             </div>
             <div className="container mx-auto px-4 relative z-10">
                  <div className="max-w-3xl mx-auto text-center">
