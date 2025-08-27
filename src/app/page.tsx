@@ -145,7 +145,7 @@ export default function HomePage() {
   }, [toast]);
 
 
-  const handleSearch = async () => {
+  const handleSearch = async (searchOptions?: { category: string }) => {
     setIsSearching(true);
     setSearchResults([]);
 
@@ -160,10 +160,15 @@ export default function HomePage() {
             return;
         }
 
-        const activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
+        let activeCategories: string[] = [];
+        if (searchOptions?.category) {
+            activeCategories = [searchOptions.category];
+        } else {
+            activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
+        }
         
         const input: AiSearchInput = {
-            query: searchQuery,
+            query: searchOptions?.category ? '' : searchQuery,
             pincode: pincode || undefined,
             skillCategories: activeCategories.length > 0 ? activeCategories : undefined,
         };
@@ -184,6 +189,23 @@ export default function HomePage() {
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    // Reset other filters
+    setSearchQuery('');
+    setPincode('');
+    setSelectedCategories({ [category]: true });
+    
+    // Pass the category directly to the search function
+    handleSearch({ category });
+
+    // Scroll to the results section
+    const resultsSection = document.getElementById('results');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => ({...prev, [category]: !prev[category]}));
   }
@@ -193,6 +215,15 @@ export default function HomePage() {
       handleSearch();
     }
   }
+  
+  const popularCategories = [
+    { name: t.plumbing, dbCategory: 'Plumber (Nalband)', icon: Wrench },
+    { name: t.electrician, dbCategory: 'Electrician (Bijli Mistri)', icon: Zap },
+    { name: t.carpenter, dbCategory: 'Carpenter (Barhai)', icon: Hammer },
+    { name: t.painter, dbCategory: 'Painter (Rang Saz)', icon: Paintbrush },
+    { name: t.acService, dbCategory: 'AC Repair & Service', icon: AirVent },
+    { name: t.homeCleaning, dbCategory: 'Home Deep Cleaning', icon: Sparkles },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -245,7 +276,7 @@ export default function HomePage() {
                             />
                         </div>
                         <div className='flex gap-2'>
-                            <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={handleSearch} disabled={isSearching}>
+                            <Button size="lg" className="h-12 bg-accent text-accent-foreground hover:bg-accent/90 flex-1 sm:flex-initial" onClick={() => handleSearch()} disabled={isSearching}>
                                 {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                                 <span className="hidden sm:inline ml-2">{t.search}</span>
                             </Button>
@@ -282,28 +313,21 @@ export default function HomePage() {
               {t.popularCategories}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-              {[
-                { name: t.plumbing, icon: Wrench, href:"#" },
-                { name: t.electrician, icon: Zap, href:"#" },
-                { name: t.carpenter, icon: Hammer, href:"#" },
-                { name: t.painter, icon: Paintbrush, href:"#" },
-                { name: t.acService, icon: AirVent, href:"#" },
-                { name: t.homeCleaning, icon: Sparkles, href:"#" },
-              ].map((cat) => (
-                <Link key={cat.name} href={cat.href} className="group">
-                  <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 card-glow">
+              {popularCategories.map((cat) => (
+                <div key={cat.name} className="group cursor-pointer" onClick={() => handleCategoryClick(cat.dbCategory)}>
+                  <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 card-glow h-full">
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
                         <cat.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
                     </div>
                     <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">{cat.name}</h3>
                   </Card>
-                </Link>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-white dark:bg-card py-16">
+        <section id="results" className="bg-white dark:bg-card py-16">
           <div className="container mx-auto px-4">
               <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
                 {t.featuredWorkers}
@@ -356,7 +380,5 @@ export default function HomePage() {
       <Footer />
     </div>
   );
-
     
-
     
