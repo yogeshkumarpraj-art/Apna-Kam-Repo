@@ -361,6 +361,7 @@ export default function ProfileEditPage() {
                                             )}
                                             <Input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={uploadProgress !== null}/>
                                         </div>
+                                        <p className="text-xs text-muted-foreground">Max 5MB per image. PNG, JPG, WebP.</p>
                                     </div>
 
                                     <div className="space-y-2">
@@ -419,3 +420,5 @@ export default function ProfileEditPage() {
         </div>
     );
 }
+
+    
