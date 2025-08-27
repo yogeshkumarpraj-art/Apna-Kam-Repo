@@ -51,10 +51,12 @@ async function getMonthlyBookingData() {
     
     querySnapshot.forEach(doc => {
         const booking = doc.data();
-        const bookingDate = booking.createdAt.toDate();
-        const monthName = format(bookingDate, 'MMM');
-        if (monthName in monthlyData) {
-            monthlyData[monthName]++;
+        if (booking.createdAt) {
+            const bookingDate = booking.createdAt.toDate();
+            const monthName = format(bookingDate, 'MMM');
+            if (monthName in monthlyData) {
+                monthlyData[monthName]++;
+            }
         }
     });
 
