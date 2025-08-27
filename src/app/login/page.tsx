@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,9 +15,6 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Initialize auth only on the client side
 const auth = getAuth(app);
-
-// Declare recaptchaVerifier in a scope accessible by the component
-let recaptchaVerifier: RecaptchaVerifier | null = null;
 
 const GoogleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
@@ -40,18 +37,23 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const generateRecaptcha = () => {
-    // Prevent re-rendering the recaptcha
-    if (recaptchaVerifier) return;
+  // Use a state for the verifier
+  const [recaptcha, setRecaptcha] = useState<RecaptchaVerifier | null>(null);
 
-    recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': (response: any) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-        // This callback is crucial for invisible reCAPTCHA.
-      }
-    });
-  };
+  // Initialize reCAPTCHA
+  useEffect(() => {
+    try {
+        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response: any) => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+            }
+        });
+        setRecaptcha(verifier);
+    } catch (error) {
+        console.error("Error initializing RecaptchaVerifier", error);
+    }
+  }, []);
 
   const handleSendOtp = async () => {
     if (!/^\+91\d{10}$/.test(phoneNumber)) {
@@ -63,11 +65,18 @@ export default function LoginPage() {
       return;
     }
 
+    if (!recaptcha) {
+        toast({
+            title: "reCAPTCHA not ready",
+            description: "Please wait a moment and try again.",
+            variant: "destructive",
+        });
+        return;
+    }
+
     setIsLoading(true);
     try {
-      generateRecaptcha(); // Ensure verifier is ready
-      const appVerifier = recaptchaVerifier!;
-      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      const result = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
       setConfirmationResult(result);
       setOtpSent(true);
       toast({
@@ -81,11 +90,6 @@ export default function LoginPage() {
         description: "Please check the phone number or try again later.",
         variant: "destructive",
       });
-       // Reset verifier on error
-      if (recaptchaVerifier) {
-        recaptchaVerifier.clear();
-        recaptchaVerifier = null;
-      }
     } finally {
       setIsLoading(false);
     }
