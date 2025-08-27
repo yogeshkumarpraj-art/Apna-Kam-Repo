@@ -6,7 +6,7 @@ import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Header } from '@/components/header';
-import { Loader2, Calendar, Briefcase, User, Check, X } from 'lucide-react';
+import { Loader2, Calendar, Briefcase, User, Check, X, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -92,7 +92,7 @@ export default function MyBookingsPage() {
         fetchBookings();
     }, [user, toast]);
 
-    const handleStatusUpdate = async (bookingId: string, newStatus: 'confirmed' | 'cancelled') => {
+    const handleStatusUpdate = async (bookingId: string, newStatus: 'confirmed' | 'cancelled' | 'completed') => {
         setIsUpdating(bookingId);
         try {
             await updateBookingStatus(bookingId, newStatus);
@@ -118,12 +118,22 @@ export default function MyBookingsPage() {
             default: return 'outline';
         }
     }
+    
+    const getBadgeClassName = (status: Booking['status']) => {
+        switch (status) {
+            case 'completed': return 'bg-green-100 text-green-800';
+            default: return '';
+        }
+    }
+
 
     const upcomingBookings = bookings.filter(b => b.status === 'pending' || (b.status === 'confirmed' && b.bookingDate >= new Date()));
     const pastBookings = bookings.filter(b => b.status !== 'pending' && (b.status !== 'confirmed' || b.bookingDate < new Date()));
     
     const BookingCard = ({ booking }: { booking: Booking }) => {
         const isWorker = user?.uid === booking.workerId;
+        const isCustomer = user?.uid === booking.customerId;
+
         return (
              <Card>
                 <CardHeader>
@@ -137,21 +147,29 @@ export default function MyBookingsPage() {
                                 {format(booking.bookingDate, 'MMMM d, yyyy')}
                             </CardDescription>
                         </div>
-                        <Badge variant={getBadgeVariant(booking.status)} className="capitalize">{booking.status}</Badge>
+                        <Badge variant={getBadgeVariant(booking.status)} className={`capitalize ${getBadgeClassName(booking.status)}`}>{booking.status}</Badge>
                     </div>
                 </CardHeader>
-                {isWorker && booking.status === 'pending' && (
-                     <CardFooter className="flex justify-end gap-2">
-                         <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(booking.id, 'cancelled')} disabled={isUpdating === booking.id}>
-                            {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <X className="mr-2 h-4 w-4" />}
-                             Cancel
+                <CardFooter className="flex justify-end gap-2">
+                    {isWorker && booking.status === 'pending' && (
+                        <>
+                            <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(booking.id, 'cancelled')} disabled={isUpdating === booking.id}>
+                                {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <X className="mr-2 h-4 w-4" />}
+                                Cancel
+                            </Button>
+                            <Button size="sm" onClick={() => handleStatusUpdate(booking.id, 'confirmed')} disabled={isUpdating === booking.id}>
+                                {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Check className="mr-2 h-4 w-4" />}
+                                Confirm
+                            </Button>
+                        </>
+                    )}
+                    {isCustomer && booking.status === 'confirmed' && (
+                        <Button size="sm" onClick={() => handleStatusUpdate(booking.id, 'completed')} disabled={isUpdating === booking.id}>
+                            {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                            Mark as Completed
                         </Button>
-                        <Button size="sm" onClick={() => handleStatusUpdate(booking.id, 'confirmed')} disabled={isUpdating === booking.id}>
-                            {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Check className="mr-2 h-4 w-4" />}
-                            Confirm
-                        </Button>
-                    </CardFooter>
-                )}
+                    )}
+                </CardFooter>
             </Card>
         )
     };
