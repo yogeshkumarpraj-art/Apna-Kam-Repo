@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,16 +11,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from '@/components/ui/badge';
 import { suggestSkills } from '@/ai/flows/skill-suggestion';
-import { Loader2, Plus, Sparkles, X } from 'lucide-react';
+import { Loader2, Plus, Sparkles, X, Trash2, Upload } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { Worker } from '@/lib/types';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { doc, setDoc, getDoc } from "firebase/firestore"; 
-import { db } from '@/lib/firebase';
+import { doc, setDoc, getDoc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore"; 
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { useRouter } from 'next/navigation';
+import { Progress } from '@/components/ui/progress';
 
 
 const skillCategories = [
@@ -34,6 +37,7 @@ export default function ProfileEditPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
     // Form state
     const [name, setName] = useState('');
@@ -48,6 +52,7 @@ export default function ProfileEditPage() {
     const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
     const [currentSkills, setCurrentSkills] = useState<string[]>([]);
     const [newSkill, setNewSkill] = useState('');
+    const [portfolio, setPortfolio] = useState<Worker['portfolio']>([]);
 
     useEffect(() => {
         if (user) {
@@ -69,6 +74,7 @@ export default function ProfileEditPage() {
                     setPriceType(data.priceType || 'job');
                     setCurrentSkills(data.skills || []);
                     setWorkerDetails(data.description || '');
+                    setPortfolio(data.portfolio || []);
                 } else {
                     // Pre-fill from auth if no profile exists
                     setName(user.displayName || '');
@@ -117,6 +123,72 @@ export default function ProfileEditPage() {
         setCurrentSkills(currentSkills.filter(skill => skill !== skillToRemove));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleImageUpload(file);
+        }
+    };
+
+    const handleImageUpload = (file: File) => {
+        if (!user) return;
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `${new Date().getTime()}.${fileExtension}`;
+        const storagePath = `portfolio/${user.uid}/${fileName}`;
+        const storageRef = ref(storage, storagePath);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(progress);
+            },
+            (error) => {
+                console.error("Upload failed:", error);
+                toast({ title: "Upload Failed", description: "Could not upload image.", variant: "destructive" });
+                setUploadProgress(null);
+            },
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+                    const newImage = { url: downloadURL, hint: "worker project", fullPath: storagePath };
+                    setPortfolio(prev => [...prev, newImage]);
+                    
+                    const userRef = doc(db, "users", user.uid);
+                    await updateDoc(userRef, {
+                        portfolio: arrayUnion(newImage)
+                    });
+
+                    toast({ title: "Image Uploaded", description: "Your portfolio has been updated." });
+                    setUploadProgress(null);
+                });
+            }
+        );
+    };
+
+    const handleImageDelete = async (imageToDelete: Worker['portfolio'][0]) => {
+        if (!user) return;
+        const imageRef = ref(storage, imageToDelete.fullPath);
+        
+        try {
+            // Delete from Storage
+            await deleteObject(imageRef);
+
+            // Delete from Firestore
+            const userRef = doc(db, "users", user.uid);
+            await updateDoc(userRef, {
+                portfolio: arrayRemove(imageToDelete)
+            });
+
+            // Update local state
+            setPortfolio(prev => prev.filter(img => img.url !== imageToDelete.url));
+
+            toast({ title: "Image Deleted", description: "Your portfolio has been updated." });
+        } catch (error) {
+            console.error("Error deleting image:", error);
+            toast({ title: "Delete Failed", description: "Could not delete image.", variant: "destructive" });
+        }
+    };
+
     const handleSaveChanges = async () => {
         if (!user) {
             toast({ title: "Not logged in", description: "You must be logged in to save.", variant: "destructive" });
@@ -137,7 +209,6 @@ export default function ProfileEditPage() {
                 description: workerDetails,
                 uid: user.uid,
                 phone: user.phoneNumber,
-                // Add a flag to identify if user is a worker
                 isWorker: category && category !== 'customer',
             }, { merge: true });
 
@@ -244,6 +315,35 @@ export default function ProfileEditPage() {
                                     </RadioGroup>
                                 </div>
                             </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-md font-semibold">Portfolio Images</h4>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                    {portfolio.map((image) => (
+                                        <div key={image.url} className="relative group">
+                                            <Image src={image.url} alt="Portfolio image" width={200} height={200} className="rounded-md object-cover aspect-square" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <Button variant="destructive" size="icon" onClick={() => handleImageDelete(image)}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {uploadProgress !== null && (
+                                        <div className="border-2 border-dashed rounded-md flex flex-col items-center justify-center p-4">
+                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
+                                            <Progress value={uploadProgress} className="w-full h-2" />
+                                            <p className="text-xs text-muted-foreground mt-1">Uploading...</p>
+                                        </div>
+                                    )}
+                                     <Label htmlFor="file-upload" className="border-2 border-dashed rounded-md cursor-pointer flex flex-col items-center justify-center hover:bg-accent/50 transition-colors p-4">
+                                        <Upload className="h-8 w-8 text-muted-foreground"/>
+                                        <span className="text-sm text-muted-foreground mt-2 text-center">Upload Image</span>
+                                     </Label>
+                                    <Input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/png, image/jpeg" disabled={uploadProgress !== null}/>
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
                                 <Label htmlFor="description">Describe your experience & skills</Label>
                                 <Textarea id="description" placeholder="e.g., I am a certified plumber with 5 years of experience in residential and commercial projects..." value={workerDetails} onChange={(e) => setWorkerDetails(e.target.value)} rows={4}/>

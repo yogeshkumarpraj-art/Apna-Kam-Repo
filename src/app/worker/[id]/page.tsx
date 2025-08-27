@@ -81,7 +81,7 @@ export default function WorkerProfilePage() {
                         price: data.price,
                         priceType: data.priceType,
                         avatar: data.avatar || "https://placehold.co/100x100.png",
-                        portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
+                        portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional", fullPath: ''}],
                         rating: data.rating || 0,
                         reviewCount: data.reviewCount || 0,
                         isFavorite: false, // Will be updated below

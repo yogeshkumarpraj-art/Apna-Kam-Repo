@@ -124,7 +124,7 @@ export default function HomePage() {
                     priceType: data.priceType,
                     isFavorite: false,
                     avatar: data.avatar || "https://placehold.co/100x100.png",
-                    portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
+                    portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional", fullPath: ''}],
                 });
             });
             setSearchResults(workersList);

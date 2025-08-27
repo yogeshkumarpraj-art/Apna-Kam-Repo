@@ -36,7 +36,7 @@ const fetchWorkersByIds = async (ids: string[]): Promise<Worker[]> => {
                 priceType: data.priceType,
                 isFavorite: true, // They are favorites on this page
                 avatar: data.avatar || "https://placehold.co/100x100.png",
-                portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
+                portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional", fullPath: ''}],
             };
         });
     return workers;

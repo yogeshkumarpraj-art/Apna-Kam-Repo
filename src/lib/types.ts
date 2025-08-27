@@ -13,7 +13,7 @@ export interface Worker {
   description: string;
   isFavorite: boolean;
   avatar: string;
-  portfolio: { url: string, hint: string }[];
+  portfolio: { url: string, hint: string, fullPath: string }[];
   contact?: {
     phone: string;
     email: string;
