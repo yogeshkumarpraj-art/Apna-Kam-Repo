@@ -1,3 +1,4 @@
+
 export interface Worker {
   id: string;
   name: string;
@@ -5,7 +6,7 @@ export interface Worker {
   location: string;
   pincode?: string;
   rating: number;
-  reviews: number;
+  reviewCount: number;
   price: number;
   priceType: 'daily' | 'job' | 'sqft';
   skills: string[];
@@ -21,9 +22,24 @@ export interface Worker {
 
 export interface Review {
   id: string;
-  author: string;
-  avatar: string;
+  bookingId: string;
+  workerId: string;
+  customerId: string;
+  customerName: string;
+  customerAvatar: string;
   rating: number;
   comment: string;
-  date: string;
+  createdAt: Date;
+}
+
+export interface Booking {
+    id: string;
+    workerId: string;
+    customerId: string;
+    workerName: string;
+    customerName: string;
+    bookingDate: Date;
+    status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+    createdAt: Date;
+    hasBeenReviewed?: boolean;
 }

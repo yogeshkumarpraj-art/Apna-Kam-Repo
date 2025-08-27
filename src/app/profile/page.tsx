@@ -14,16 +14,6 @@ import { useAuth } from "@/context/auth-context";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-// This is now mock data for a worker profile, which we will fetch from a database later.
-const mockWorkerProfile = {
-    category: 'Plumber',
-    skills: ['Leak Repair', 'Pipe Fitting', 'Drain Cleaning'],
-    description: 'Certified plumber providing top-notch services for residential and commercial properties.',
-    location: 'Delhi, India',
-    pincode: '110001',
-    isWorker: true,
-}
-
 interface UserProfile {
     name: string;
     email: string;
@@ -35,6 +25,8 @@ interface UserProfile {
     location?: string;
     pincode?: string;
     isWorker?: boolean;
+    rating?: number;
+    reviewCount?: number;
 }
 
 export default function ProfilePage() {
@@ -62,6 +54,8 @@ export default function ProfilePage() {
                         location: data.location,
                         pincode: data.pincode,
                         isWorker: data.isWorker,
+                        rating: data.rating,
+                        reviewCount: data.reviewCount,
                     });
                 } else {
                      // If no profile in DB, create a basic one from Auth

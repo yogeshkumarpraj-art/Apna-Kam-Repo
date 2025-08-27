@@ -1,5 +1,4 @@
 
-
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -32,7 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -40,11 +39,8 @@ import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { createBooking } from '@/app/bookings/actions';
+import { formatDistanceToNow } from 'date-fns';
 
-const mockReviews: Review[] = [
-    { id: '1', author: 'Amit Patel', avatar: 'https://placehold.co/100x100.png', rating: 5, comment: 'Very professional and fixed the issue quickly. Highly recommended!', date: '2 weeks ago' },
-    { id: '2', author: 'Sunita Rao', avatar: 'https://placehold.co/100x100.png', rating: 4, comment: 'Good work, but was a bit late. Overall satisfied with the service.', date: '1 month ago' }
-]
 
 export default function WorkerProfilePage() {
     const params = useParams();
@@ -53,6 +49,7 @@ export default function WorkerProfilePage() {
     const { toast } = useToast();
 
     const [worker, setWorker] = useState<Worker | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [contactRevealed, setContactRevealed] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
@@ -63,10 +60,11 @@ export default function WorkerProfilePage() {
     const { id } = params;
 
     useEffect(() => {
-        const fetchWorker = async () => {
+        const fetchWorkerAndReviews = async () => {
             if (!id) return;
             setLoading(true);
             try {
+                // Fetch worker data
                 const workerDocRef = doc(db, "users", id as string);
                 const workerDocSnap = await getDoc(workerDocRef);
 
@@ -84,13 +82,28 @@ export default function WorkerProfilePage() {
                         priceType: data.priceType,
                         avatar: data.avatar || "https://placehold.co/100x100.png",
                         portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional"}],
-                        rating: 4.5, // Mock
-                        reviews: Math.floor(Math.random() * 100), // Mock
+                        rating: data.rating || 0,
+                        reviewCount: data.reviewCount || 0,
                         isFavorite: false, // Will be updated below
                         contact: { phone: data.phone, email: data.email },
                     });
                 }
 
+                // Fetch reviews for the worker
+                const reviewsQuery = query(
+                    collection(db, 'reviews'), 
+                    where('workerId', '==', id as string),
+                    orderBy('createdAt', 'desc')
+                );
+                const reviewsSnapshot = await getDocs(reviewsQuery);
+                const reviewsList: Review[] = reviewsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    createdAt: doc.data().createdAt.toDate(),
+                })) as Review[];
+                setReviews(reviewsList);
+
+                // Check favorite status if user is logged in
                 if (user) {
                     const userDocRef = doc(db, "users", user.uid);
                     const userDocSnap = await getDoc(userDocRef);
@@ -100,14 +113,15 @@ export default function WorkerProfilePage() {
                     }
                 }
             } catch (error) {
-                console.error("Error fetching worker: ", error);
+                console.error("Error fetching worker data: ", error);
+                 toast({ title: "Error", description: "Could not fetch worker data.", variant: "destructive" });
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchWorker();
-    }, [id, user]);
+        fetchWorkerAndReviews();
+    }, [id, user, toast]);
 
 
     const handleRevealContact = () => {
@@ -244,18 +258,18 @@ export default function WorkerProfilePage() {
                         <Separator />
 
                         <div>
-                            <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({worker.reviews})</h2>
+                            <h2 className="text-2xl font-bold font-headline mb-4">Reviews ({worker.reviewCount})</h2>
                             <div className="space-y-6">
-                                {mockReviews.map(review => (
+                                {reviews.length > 0 ? reviews.map(review => (
                                     <div key={review.id} className="flex gap-4">
                                         <Avatar>
-                                            <AvatarImage src={review.avatar} alt={review.author} data-ai-hint="person" />
-                                            <AvatarFallback>{review.author.charAt(0)}</AvatarFallback>
+                                            <AvatarImage src={review.customerAvatar} alt={review.customerName} data-ai-hint="person" />
+                                            <AvatarFallback>{review.customerName.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <p className="font-semibold">{review.author}</p>
-                                                <span className="text-xs text-muted-foreground">{review.date}</span>
+                                                <p className="font-semibold">{review.customerName}</p>
+                                                <span className="text-xs text-muted-foreground">{formatDistanceToNow(review.createdAt)} ago</span>
                                             </div>
                                             <div className="flex items-center gap-0.5 my-1">
                                                 {[...Array(5)].map((_, i) => (
@@ -265,7 +279,9 @@ export default function WorkerProfilePage() {
                                             <p className="text-sm text-muted-foreground">{review.comment}</p>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <p className="text-muted-foreground">No reviews yet. Be the first one to leave a review!</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -287,8 +303,8 @@ export default function WorkerProfilePage() {
                                     </div>
                                     <div className="flex items-center gap-1 text-sm mt-2">
                                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span className="font-bold">{worker.rating}</span>
-                                        <span className="text-muted-foreground">({worker.reviews} reviews)</span>
+                                        <span className="font-bold">{worker.rating.toFixed(1)}</span>
+                                        <span className="text-muted-foreground">({worker.reviewCount} reviews)</span>
                                     </div>
                                 </div>
                                 <Separator className="my-6" />

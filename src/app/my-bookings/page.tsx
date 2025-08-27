@@ -6,7 +6,7 @@ import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Header } from '@/components/header';
-import { Loader2, Calendar, Briefcase, User, Check, X, CheckCircle2 } from 'lucide-react';
+import { Loader2, Calendar, Briefcase, User, Check, X, CheckCircle2, Star, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -15,17 +15,97 @@ import { format } from 'date-fns';
 import { updateBookingStatus } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import type { Booking } from '@/lib/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { submitReview } from '../reviews/actions';
+import { Label } from '@/components/ui/label';
 
-interface Booking {
-    id: string;
-    workerId: string;
-    customerId: string;
-    workerName: string;
-    customerName: string;
-    bookingDate: Date;
-    status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-    createdAt: Date;
-}
+const ReviewDialog = ({ booking, onReviewSubmitted }: { booking: Booking, onReviewSubmitted: (bookingId: string) => void }) => {
+    const [rating, setRating] = useState(0);
+    const [hoverRating, setHoverRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const { user } = useAuth();
+    const { toast } = useToast();
+
+    const handleSubmit = async () => {
+        if (!user) return;
+        if (rating === 0) {
+            toast({ title: "Please select a rating.", variant: "destructive" });
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            await submitReview({
+                bookingId: booking.id,
+                workerId: booking.workerId,
+                customerId: user.uid,
+                customerName: user.displayName || "Anonymous",
+                customerAvatar: user.photoURL || "https://placehold.co/100x100.png",
+                rating,
+                comment,
+            });
+            toast({ title: "Review Submitted!", description: "Thank you for your feedback." });
+            onReviewSubmitted(booking.id);
+            setIsOpen(false);
+        } catch (error) {
+            console.error(error);
+            toast({ title: "Submission Failed", description: "Could not submit your review.", variant: "destructive" });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Leave a Review
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Review your booking with {booking.workerName}</DialogTitle>
+                    <DialogDescription>Your feedback helps other users make better decisions.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label>Your Rating</Label>
+                        <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                    key={star}
+                                    className={`h-8 w-8 cursor-pointer transition-colors ${
+                                        (hoverRating >= star || rating >= star)
+                                            ? 'text-yellow-400 fill-yellow-400'
+                                            : 'text-gray-300'
+                                    }`}
+                                    onMouseEnter={() => setHoverRating(star)}
+                                    onMouseLeave={() => setHoverRating(0)}
+                                    onClick={() => setRating(star)}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="comment">Your Comment (Optional)</Label>
+                        <Textarea id="comment" value={comment} onChange={(e) => setComment(e.target.value)} />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Submit Review
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 export default function MyBookingsPage() {
     const { user } = useAuth();
@@ -108,6 +188,10 @@ export default function MyBookingsPage() {
             setIsUpdating(null);
         }
     };
+
+    const handleReviewSubmitted = (bookingId: string) => {
+        setBookings(bookings.map(b => b.id === bookingId ? { ...b, hasBeenReviewed: true } : b));
+    }
     
     const getBadgeVariant = (status: Booking['status']) => {
         switch (status) {
@@ -168,6 +252,9 @@ export default function MyBookingsPage() {
                             {isUpdating === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle2 className="mr-2 h-4 w-4" />}
                             Mark as Completed
                         </Button>
+                    )}
+                     {isCustomer && booking.status === 'completed' && !booking.hasBeenReviewed && (
+                        <ReviewDialog booking={booking} onReviewSubmitted={handleReviewSubmitted} />
                     )}
                 </CardFooter>
             </Card>

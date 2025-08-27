@@ -30,8 +30,8 @@ const fetchWorkersByIds = async (ids: string[]): Promise<Worker[]> => {
                 pincode: data.pincode,
                 description: data.description,
                 skills: data.skills,
-                rating: 4.5, // Mock
-                reviews: Math.floor(Math.random() * 100), // Mock
+                rating: data.rating || 0,
+                reviewCount: data.reviewCount || 0,
                 price: data.price,
                 priceType: data.priceType,
                 isFavorite: true, // They are favorites on this page

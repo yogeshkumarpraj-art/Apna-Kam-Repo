@@ -118,8 +118,8 @@ export function WorkerCard({ worker }: WorkerCardProps) {
             <h3 className="font-bold text-lg font-headline">{worker.name}</h3>
             <div className="flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-              <span className="font-semibold text-foreground">{worker.rating}</span>
-              <span className="text-xs">({worker.reviews})</span>
+              <span className="font-semibold text-foreground">{worker.rating.toFixed(1)}</span>
+              <span className="text-xs">({worker.reviewCount})</span>
             </div>
           </div>
           <p className="text-sm text-primary font-medium">{worker.category}</p>

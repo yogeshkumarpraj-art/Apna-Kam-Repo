@@ -56,8 +56,8 @@ export const searchWorkersTool = ai.defineTool(
             pincode: data.pincode,
             description: data.description,
             skills: data.skills,
-            rating: 4.5, // Mock data
-            reviews: Math.floor(Math.random() * 100), // Mock data
+            rating: data.rating || 0,
+            reviewCount: data.reviewCount || 0,
             price: data.price,
             priceType: data.priceType,
             isFavorite: false, // This needs to be determined client-side
