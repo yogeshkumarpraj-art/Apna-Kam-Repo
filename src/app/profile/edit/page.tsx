@@ -29,6 +29,8 @@ const skillCategories = [
     'Mason (Raj Mistri)', 'Labourer (Mazdoor)', 'Plumber (Nalband)', 'Electrician (Bijli Mistri)', 'Carpenter (Barhai)', 'Painter (Rang Saz)', 'Welder', 'Fabricator', 'POP/False Ceiling Expert', 'Tile & Marble Fitter', 'Mobile Repair Technician', 'AC Repair & Service', 'Washing Machine Repair', 'Refrigerator Repair', 'TV & Set-Top Box Technician', 'Computer/Laptop Repair', 'Tailor (Darzi)', 'Cobbler (Mochi)', 'Beautician/Mehendi Artist', 'Barber (Nai)', 'Cook (Rasoiya/Bawarchi)', 'Househelp (Kaamwali/Bai)', 'Driver (Chalak)', 'Pest Control Service', 'Event Staff/Waiters', 'Tent House Operator', 'Caterer', 'Packers & Movers', 'Truck/Loader Driver', 'Bike/Mobile Mechanic', 'Home Deep Cleaning', 'Car/Bike Cleaning', 'Water Tank Cleaner', 'Sewage & Drain Cleaning', 'Gardening & Lawn Maintenance (Mali)', 'CNC Machine Operator', 'Lathe Machine Operator', 'Mechanic (Mistri)', 'Equipment Repair'
 ];
 
+const MAX_IMAGE_SIZE_MB = 2;
+
 export default function ProfileEditPage() {
     const { user } = useAuth();
     const { toast } = useToast();
@@ -126,6 +128,14 @@ export default function ProfileEditPage() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+                toast({
+                    title: "Image too large",
+                    description: `Please select an image smaller than ${MAX_IMAGE_SIZE_MB}MB.`,
+                    variant: "destructive"
+                });
+                return;
+            }
             handleImageUpload(file);
         }
     };
@@ -401,3 +411,5 @@ export default function ProfileEditPage() {
         </div>
     );
 }
+
+    
