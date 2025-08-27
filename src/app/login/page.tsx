@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,16 +23,21 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  
+  // No need for useEffect to initialize recaptcha
 
-  useEffect(() => {
-    // This will run only once on the client, ensuring window object is available.
+  const generateRecaptcha = () => {
+    // Check if verifier already exists
+    if (window.recaptchaVerifier) return;
+    
+    // @ts-ignore
     window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
       'size': 'invisible',
       'callback': (response: any) => {
         // reCAPTCHA solved, allow signInWithPhoneNumber.
       }
     });
-  }, []);
+  };
 
   const handleSendOtp = async () => {
     if (!/^\+91\d{10}$/.test(phoneNumber)) {
@@ -46,6 +51,7 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
+      generateRecaptcha(); // Generate recaptcha right before use
       const appVerifier = window.recaptchaVerifier;
       const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       setConfirmationResult(result);
