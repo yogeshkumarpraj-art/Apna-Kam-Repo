@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -37,23 +37,22 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  // Use a state for the verifier
-  const [recaptcha, setRecaptcha] = useState<RecaptchaVerifier | null>(null);
-
-  // Initialize reCAPTCHA
-  useEffect(() => {
-    try {
-        const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+  const setupRecaptcha = () => {
+    // @ts-ignore
+    if (!window.recaptchaVerifier) {
+        // @ts-ignore
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
             'size': 'invisible',
             'callback': (response: any) => {
                 // reCAPTCHA solved, allow signInWithPhoneNumber.
+            },
+            'expired-callback': () => {
+                // Response expired. Ask user to solve reCAPTCHA again.
             }
         });
-        setRecaptcha(verifier);
-    } catch (error) {
-        console.error("Error initializing RecaptchaVerifier", error);
     }
-  }, []);
+  }
+
 
   const handleSendOtp = async () => {
     if (!/^\+91\d{10}$/.test(phoneNumber)) {
@@ -65,18 +64,12 @@ export default function LoginPage() {
       return;
     }
 
-    if (!recaptcha) {
-        toast({
-            title: "reCAPTCHA not ready",
-            description: "Please wait a moment and try again.",
-            variant: "destructive",
-        });
-        return;
-    }
-
     setIsLoading(true);
     try {
-      const result = await signInWithPhoneNumber(auth, phoneNumber, recaptcha);
+      setupRecaptcha();
+      // @ts-ignore
+      const appVerifier = window.recaptchaVerifier;
+      const result = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
       setConfirmationResult(result);
       setOtpSent(true);
       toast({
