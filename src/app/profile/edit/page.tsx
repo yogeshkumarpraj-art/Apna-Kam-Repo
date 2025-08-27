@@ -136,17 +136,24 @@ export default function ProfileEditPage() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, uploadType: 'portfolio' | 'avatar') => {
         const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-                toast({
-                    title: "Image too large",
-                    description: `Please select an image smaller than ${MAX_IMAGE_SIZE_MB}MB.`,
-                    variant: "destructive"
-                });
-                return;
-            }
-            handleImageUpload(file, uploadType);
+        if (!file) {
+            toast({
+                title: "No file selected",
+                description: "Please choose an image file to upload.",
+                variant: "destructive"
+            });
+            return;
         }
+
+        if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+            toast({
+                title: "Image too large",
+                description: `Please select an image smaller than ${MAX_IMAGE_SIZE_MB}MB.`,
+                variant: "destructive"
+            });
+            return;
+        }
+        handleImageUpload(file, uploadType);
     };
 
     const handleImageUpload = (file: File, uploadType: 'portfolio' | 'avatar') => {
@@ -168,7 +175,7 @@ export default function ProfileEditPage() {
             },
             (error) => {
                 console.error("Upload failed:", error);
-                toast({ title: "Upload Failed", description: "Could not upload image.", variant: "destructive" });
+                toast({ title: "Upload Failed", description: "Could not upload image. Please check storage rules.", variant: "destructive" });
                  if (uploadType === 'portfolio') {
                     setPortfolioUploadProgress(null);
                 } else {
@@ -467,6 +474,3 @@ export default function ProfileEditPage() {
         </div>
     );
 }
-
-
-    
