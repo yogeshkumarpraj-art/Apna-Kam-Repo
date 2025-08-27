@@ -14,12 +14,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/context/language-context"
 import { translations } from "@/lib/i18n"
+import { useAuth } from "@/context/auth-context"
 
 export function Header() {
   const { setTheme } = useTheme()
   const { language, setLanguage } = useLanguage();
+  const { user } = useAuth();
   const t = translations[language];
 
+  const forWorkersLink = user ? "/profile/edit" : "/login";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -49,7 +52,7 @@ export function Header() {
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center space-x-2">
             <Button variant="ghost" asChild>
-                <Link href="/profile/edit">{t.forWorkers}</Link>
+                <Link href={forWorkersLink}>{t.forWorkers}</Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -90,5 +93,3 @@ export function Header() {
     </header>
   )
 }
-
-    
