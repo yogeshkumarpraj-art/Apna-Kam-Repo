@@ -33,13 +33,11 @@ export default function EditPostPage() {
     const fetchPost = async () => {
       setIsLoading(true);
       try {
-        // We need a way to get the raw markdown content, not HTML
-        // Let's modify getPostData to return raw content as well
         const postData = await getPostData(slug, false);
         setPost(postData);
         setTitle(postData.title);
         setDescription(postData.description);
-        setContent(postData.content); // Assuming getPostData is modified
+        setContent(postData.content);
       } catch (error) {
         toast({
           title: "Error fetching post",
