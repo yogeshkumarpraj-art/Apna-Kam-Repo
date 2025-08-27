@@ -12,17 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Star, MapPin, Phone, Mail, Heart, Flag, Calendar as CalendarIcon, Share2, Loader2, Sparkles } from 'lucide-react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -42,6 +31,8 @@ import { createBooking } from '@/app/bookings/actions';
 import { summarizeReviews } from '@/ai/flows/summarize-reviews';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { createRazorpayOrder, verifyPayment } from '@/app/payments/actions';
+import Script from 'next/script';
 
 
 export default function WorkerProfilePage() {
@@ -60,6 +51,7 @@ export default function WorkerProfilePage() {
     const [bookingDate, setBookingDate] = useState<Date | undefined>(new Date());
     const [isBooking, setIsBooking] = useState(false);
     const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
     
     const { id } = params;
 
@@ -141,16 +133,56 @@ export default function WorkerProfilePage() {
         fetchWorkerAndReviews();
     }, [id, user, toast]);
 
-
-    const handleRevealContact = () => {
-        // In a real app, you would handle the payment logic here before revealing contact.
-        // For this demo, we'll just simulate success.
-        toast({
-            title: "Payment Successful!",
-            description: `You can now contact ${worker?.name}.`
-        })
-        setContactRevealed(true);
-    };
+    const handlePayment = async () => {
+        if (!user || !worker) return;
+        setIsPaying(true);
+        try {
+            const order = await createRazorpayOrder({ amount: 50, currency: 'INR' });
+            if (!order) {
+                throw new Error("Order creation failed");
+            }
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC_ for client-side env vars
+                amount: order.amount,
+                currency: order.currency,
+                name: "Apna Kam",
+                description: `Fee to contact ${worker.name}`,
+                order_id: order.id,
+                handler: async function (response: any) {
+                    const verificationResult = await verifyPayment({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                    });
+                    if (verificationResult.isSuccess) {
+                        toast({ title: "Payment Successful!", description: `You can now contact ${worker?.name}.` });
+                        setContactRevealed(true);
+                    } else {
+                        toast({ title: "Payment Verification Failed", description: "Please contact support.", variant: "destructive" });
+                    }
+                },
+                prefill: {
+                    name: user.displayName || 'Customer',
+                    email: user.email || '',
+                    contact: user.phoneNumber || ''
+                },
+                notes: {
+                    address: "Apna Kam Corporate Office"
+                },
+                theme: {
+                    color: "#5DADE2"
+                }
+            };
+            // @ts-ignore
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.error("Payment failed", error);
+            toast({ title: "Payment Failed", description: "Could not initiate payment. Please try again.", variant: "destructive" });
+        } finally {
+            setIsPaying(false);
+        }
+    }
 
     const handleWhatsAppShare = () => {
         if (!worker) return;
@@ -256,6 +288,11 @@ export default function WorkerProfilePage() {
 
 
     return (
+        <>
+        <Script
+            id="razorpay-checkout-js"
+            src="https://checkout.razorpay.com/v1/checkout.js"
+        />
         <div className="bg-background min-h-screen">
             <Header />
             <main className="container mx-auto px-4 py-8">
@@ -371,25 +408,10 @@ export default function WorkerProfilePage() {
                                         <Button variant="outline" className="w-full justify-start"><Mail className="mr-2 h-4 w-4" /> {worker.contact?.email}</Button>
                                     </div>
                                 ) : (
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                                          Reveal Contact & Pay ₹50
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Unlock Worker Contact</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          To ensure genuine inquiries, we charge a small fee of ₹50 to reveal the contact details for {worker.name}. This is a one-time, non-refundable payment.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleRevealContact} className="bg-accent text-accent-foreground hover:bg-accent/90">Pay and Reveal</AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                  <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={handlePayment} disabled={isPaying}>
+                                      {isPaying && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                      Reveal Contact & Pay ₹50
+                                  </Button>
                                 )}
 
                                 <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
@@ -441,7 +463,7 @@ export default function WorkerProfilePage() {
                 </div>
             </main>
         </div>
+        </>
     );
 }
 
-    
