@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -97,8 +98,7 @@ export default function WorkerProfilePage() {
                 // Fetch reviews for the worker
                 const reviewsQuery = query(
                     collection(db, 'reviews'), 
-                    where('workerId', '==', id as string),
-                    orderBy('createdAt', 'desc')
+                    where('workerId', '==', id as string)
                 );
                 const reviewsSnapshot = await getDocs(reviewsQuery);
                 const reviewsList: Review[] = reviewsSnapshot.docs.map(doc => ({
@@ -106,6 +106,10 @@ export default function WorkerProfilePage() {
                     ...doc.data(),
                     createdAt: doc.data().createdAt.toDate(),
                 })) as Review[];
+
+                // Sort reviews by date client-side to avoid complex index
+                reviewsList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+                
                 setReviews(reviewsList);
 
                 // Check favorite status if user is logged in
