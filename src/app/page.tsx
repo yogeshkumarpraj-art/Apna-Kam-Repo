@@ -92,6 +92,32 @@ const Footer = () => {
     </footer>
 )}
 
+const fetchAllWorkers = async (): Promise<Worker[]> => {
+    const q = query(collection(db, "users"), where("isWorker", "==", true), where("isApproved", "==", true));
+    const querySnapshot = await getDocs(q);
+    const workersList: Worker[] = [];
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        workersList.push({
+            id: doc.id,
+            name: data.name,
+            category: data.category,
+            location: data.location,
+            pincode: data.pincode,
+            description: data.description,
+            skills: data.skills,
+            rating: data.rating || 0,
+            reviewCount: data.reviewCount || 0,
+            price: data.price,
+            priceType: data.priceType,
+            isFavorite: false,
+            avatar: data.avatar || "https://placehold.co/100x100.png",
+            portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional", fullPath: ''}],
+        });
+    });
+    return workersList;
+};
+
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,28 +134,7 @@ export default function HomePage() {
     const fetchInitialWorkers = async () => {
         setIsSearching(true);
         try {
-            const q = query(collection(db, "users"), where("isWorker", "==", true), where("isApproved", "==", true));
-            const querySnapshot = await getDocs(q);
-            const workersList: Worker[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                workersList.push({
-                    id: doc.id,
-                    name: data.name,
-                    category: data.category,
-                    location: data.location,
-                    pincode: data.pincode,
-                    description: data.description,
-                    skills: data.skills,
-                    rating: data.rating || 0,
-                    reviewCount: data.reviewCount || 0,
-                    price: data.price,
-                    priceType: data.priceType,
-                    isFavorite: false,
-                    avatar: data.avatar || "https://placehold.co/100x100.png",
-                    portfolio: data.portfolio || [{url: "https://placehold.co/600x400.png", hint: "worker professional", fullPath: ''}],
-                });
-            });
+            const workersList = await fetchAllWorkers();
             setSearchResults(workersList);
         } catch (error) {
             console.error("Error fetching workers:", error);
@@ -161,15 +166,21 @@ export default function HomePage() {
             return;
         }
 
-        let activeCategories: string[] = [];
-        if (searchOptions?.category) {
-            activeCategories = [searchOptions.category];
-        } else {
-            activeCategories = Object.keys(selectedCategories).filter(k => selectedCategories[k]);
-        }
+        const activeCategories = searchOptions?.category
+            ? [searchOptions.category]
+            : Object.keys(selectedCategories).filter(k => selectedCategories[k]);
         
+        const effectiveQuery = searchOptions?.category ? '' : searchQuery;
+
+        // If all search fields are empty, fetch all workers instead of calling AI
+        if (!effectiveQuery && !pincode && activeCategories.length === 0) {
+            const allWorkers = await fetchAllWorkers();
+            setSearchResults(allWorkers);
+            return;
+        }
+
         const input: AiSearchInput = {
-            query: searchOptions?.category ? '' : searchQuery,
+            query: effectiveQuery,
             pincode: pincode || undefined,
             skillCategories: activeCategories.length > 0 ? activeCategories : undefined,
         };
@@ -382,13 +393,4 @@ export default function HomePage() {
       <Footer />
     </div>
   );
-    
-    
-
-    
-
-
-
-    
-
-    
+}
