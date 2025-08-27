@@ -92,8 +92,8 @@ export function WorkerCard({ worker }: WorkerCardProps) {
   };
 
   return (
-    <Link href={`/worker/${worker.id}`} className="block group [perspective:1000px]">
-      <Card className="overflow-hidden transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 h-full flex flex-col group-hover:-translate-y-2 group-hover:[transform:rotateX(4deg)]">
+    <Link href={`/worker/${worker.id}`} className="block group">
+      <Card className="overflow-hidden card-glow h-full flex flex-col">
         <div className="relative">
           <Image
             src={worker.portfolio[0]?.url || "https://placehold.co/400x300.png"}
