@@ -201,7 +201,7 @@ export default function HomePage() {
         <section className="relative py-20 sm:py-28 text-white">
             <div className="absolute inset-0">
                 <Image 
-                    src="https://images.unsplash.com/photo-1581092921440-4c78117ba58b?w=1200&q=80"
+                    src="https://placehold.co/1200x400/1E40AF/FFFFFF?text=Apna+Kam&font=sans-serif"
                     alt="Hero background"
                     fill
                     className="object-cover"
@@ -356,5 +356,7 @@ export default function HomePage() {
       <Footer />
     </div>
   );
+
+    
 
     
