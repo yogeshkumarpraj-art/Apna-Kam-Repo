@@ -9,7 +9,7 @@ import { WorkerCard } from '@/components/worker-card';
 import type { Worker } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, Paintbrush, Wrench, Sprout, Hammer, Zap, AirVent, Sparkles } from 'lucide-react';
+import { Search, SlidersHorizontal, Loader2, MapPin, Phone, Briefcase, Eye, Building, Star, Paintbrush, Wrench, Sprout, Hammer, Zap, AirVent, Sparkles, Car } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -223,6 +223,7 @@ export default function HomePage() {
     { name: t.painter, dbCategory: 'Painter (Rang Saz)', icon: Paintbrush },
     { name: t.acService, dbCategory: 'AC Repair & Service', icon: AirVent },
     { name: t.homeCleaning, dbCategory: 'Home Deep Cleaning', icon: Sparkles },
+    { name: t.carWasher, dbCategory: 'Car/Bike Cleaning', icon: Car },
   ];
 
   return (
@@ -312,7 +313,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold tracking-tight text-center sm:text-4xl font-headline mb-12">
               {t.popularCategories}
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6">
               {popularCategories.map((cat) => (
                 <div key={cat.name} className="group cursor-pointer" onClick={() => handleCategoryClick(cat.dbCategory)}>
                   <Card className="text-center p-4 hover:shadow-lg transition-all duration-300 hover:-translate-y-2 card-glow h-full">

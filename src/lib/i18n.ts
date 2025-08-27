@@ -37,6 +37,7 @@ export const translations = {
     painter: 'Painter',
     homeCleaning: 'Home Cleaning',
     acService: 'AC Service',
+    carWasher: 'Car Washer',
   },
   hi: {
     forWorkers: 'श्रमिकों के लिए',
@@ -75,5 +76,6 @@ export const translations = {
     painter: 'पेंटर',
     homeCleaning: 'घर की सफाई',
     acService: 'एसी सर्विस',
+    carWasher: 'कार वॉशर',
   },
 };
