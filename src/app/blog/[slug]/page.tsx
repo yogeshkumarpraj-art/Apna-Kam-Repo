@@ -2,6 +2,7 @@
 import { getPostData, getAllPostIds, PostData } from '@/lib/blog';
 import { Header } from '@/components/header';
 import { format } from 'date-fns';
+import { Footer } from '@/components/footer';
 
 // This function gets called at build time
 export async function generateStaticParams() {
@@ -29,6 +30,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
         </article>
       </main>
+      <Footer />
     </div>
   );
 }

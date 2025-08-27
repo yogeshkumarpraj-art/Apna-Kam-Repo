@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, MapPin, Phone } from 'lucide-react';
 import { useState } from 'react';
 import { saveContactMessage } from './actions';
+import { Footer } from '@/components/footer';
 
 export default function ContactPage() {
   const { toast } = useToast();
@@ -108,6 +109,7 @@ export default function ContactPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

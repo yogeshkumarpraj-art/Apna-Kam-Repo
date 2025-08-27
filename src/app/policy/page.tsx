@@ -1,5 +1,6 @@
 
 import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 import { Shield } from 'lucide-react';
 
 export default function PolicyPage() {
@@ -58,6 +59,7 @@ export default function PolicyPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

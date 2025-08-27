@@ -4,6 +4,7 @@ import { getSortedPostsData, PostMeta } from '@/lib/blog';
 import { Header } from '@/components/header';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { Footer } from '@/components/footer';
 
 export default function BlogPage() {
   const allPostsData: PostMeta[] = getSortedPostsData();
@@ -33,6 +34,7 @@ export default function BlogPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

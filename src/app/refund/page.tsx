@@ -1,6 +1,7 @@
 
 import { Header } from '@/components/header';
 import { BadgeHelp } from 'lucide-react';
+import { Footer } from '@/components/footer';
 
 export default function RefundPage() {
   return (
@@ -53,6 +54,7 @@ export default function RefundPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

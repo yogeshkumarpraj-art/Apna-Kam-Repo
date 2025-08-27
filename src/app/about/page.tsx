@@ -1,5 +1,6 @@
 
 import { Header } from '@/components/header';
+import { Footer } from '@/components/footer';
 import { Sprout } from 'lucide-react';
 
 export default function AboutPage() {
@@ -42,6 +43,7 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
