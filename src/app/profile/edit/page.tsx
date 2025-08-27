@@ -174,8 +174,8 @@ export default function ProfileEditPage() {
                 }
             },
             (error) => {
-                console.error("Upload failed:", error);
-                toast({ title: "Upload Failed", description: "Could not upload image. Please check storage rules.", variant: "destructive" });
+                console.error("Upload failed with error: ", error.code, error.message);
+                toast({ title: "Upload Failed", description: "Could not upload image. Please check storage rules and configuration.", variant: "destructive" });
                  if (uploadType === 'portfolio') {
                     setPortfolioUploadProgress(null);
                 } else {
