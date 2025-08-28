@@ -1,27 +1,75 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Allow anyone to read from the users collection for public profiles
-    // But only allow a user to write to their own document.
+    // Default: Deny all reads and writes unless explicitly allowed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    //
+    // `users` collection rules
+    //
     match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth.uid == userId;
+      // Anyone authenticated can read user/worker profiles.
+      // This is necessary for customers to see worker details.
+      allow read: if request.auth != null;
+
+      // A user can only create their own profile.
+      // A user can only update their own data, but not change their admin status.
+      // An admin can update any user's data (e.g., to approve a worker).
+      allow create: if request.auth.uid == userId;
+      allow update: if (request.auth.uid == userId && !("isAdmin" in request.resource.data)) ||
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // A user can delete their own account. An admin can also delete accounts.
+      allow delete: if request.auth.uid == userId ||
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // Allow logged-in users to create bookings.
-    // They can only update/delete their own bookings later.
+    //
+    // `bookings` collection rules
+    //
     match /bookings/{bookingId} {
-      allow read, write: if request.auth != null;
+      // Only the customer or the worker involved in the booking can read it.
+      allow read: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId);
+
+      // Any authenticated user can create a booking.
+      allow create: if request.auth != null;
+
+      // The involved customer or worker can update the booking status.
+      allow update: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId);
+
+      // Bookings should not be deletable to maintain history.
+      allow delete: if false;
     }
 
-    // Allow anyone to read reviews
-    // Allow only logged-in users to create reviews
+    //
+    // `reviews` collection rules
+    //
     match /reviews/{reviewId} {
-      allow read: if true;
-      allow create: if request.auth != null;
+      // Any authenticated user can read reviews.
+      allow read: if request.auth != null;
+
+      // Only the customer who made the booking can create a review for it.
+      // Ensures the user creating the review is the one who the booking belongs to.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.customerId;
+      
+      // Reviews should be immutable.
+      allow update, delete: if false;
+    }
+
+    //
+    // `contacts` collection rules
+    //
+    match /contacts/{contactId} {
+        // Contact messages are write-only for users.
+        // They should only be readable from a secure admin backend/panel.
+        allow read, update, delete: if false;
+        
+        // Anyone can send a contact message.
+        allow create: if true;
     }
   }
 }
