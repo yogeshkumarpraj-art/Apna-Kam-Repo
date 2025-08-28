@@ -3,73 +3,71 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Default: Deny all reads and writes unless explicitly allowed.
+    // Helper function to check if a user is an admin
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // By default, deny all reads and writes
     match /{document=**} {
       allow read, write: if false;
     }
 
-    //
-    // `users` collection rules
-    //
+    // Users Collection
     match /users/{userId} {
-      // Anyone authenticated can read user/worker profiles.
-      // This is necessary for customers to see worker details.
+      // Anyone can read a worker's public profile
       allow read: if request.auth != null;
 
-      // A user can only create their own profile.
-      // A user can only update their own data, but not change their admin status.
-      // An admin can update any user's data (e.g., to approve a worker).
+      // A user can create their own profile
       allow create: if request.auth.uid == userId;
-      allow update: if (request.auth.uid == userId && !("isAdmin" in request.resource.data)) ||
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
-      
-      // A user can delete their own account. An admin can also delete accounts.
-      allow delete: if request.auth.uid == userId ||
-                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
-    }
 
-    //
-    // `bookings` collection rules
-    //
+      // A user can only update their own profile
+      // An admin can update any user's profile (e.g., for approval)
+      allow update: if request.auth.uid == userId || isAdmin();
+      
+      // A user can delete their own account
+      // An admin can delete any user account
+      allow delete: if request.auth.uid == userId || isAdmin();
+    }
+    
+    // Bookings Collection
     match /bookings/{bookingId} {
-      // Only the customer or the worker involved in the booking can read it.
-      allow read: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId);
+        // Only the customer or the worker involved in the booking can read it
+        // Admins can also read any booking
+        allow read: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId || isAdmin());
 
-      // Any authenticated user can create a booking.
-      allow create: if request.auth != null;
+        // Any authenticated user can create a booking
+        allow create: if request.auth != null;
 
-      // The involved customer or worker can update the booking status.
-      allow update: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId);
+        // Only the customer or worker involved can update the booking status
+        allow update: if request.auth != null && (request.auth.uid == resource.data.customerId || request.auth.uid == resource.data.workerId);
 
-      // Bookings should not be deletable to maintain history.
-      allow delete: if false;
+        // Nobody can delete bookings directly to maintain records
+        allow delete: if false;
     }
 
-    //
-    // `reviews` collection rules
-    //
+    // Reviews Collection
     match /reviews/{reviewId} {
-      // Any authenticated user can read reviews.
-      allow read: if request.auth != null;
+        // Any authenticated user can read reviews
+        allow read: if request.auth != null;
 
-      // Only the customer who made the booking can create a review for it.
-      // Ensures the user creating the review is the one who the booking belongs to.
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.customerId;
-      
-      // Reviews should be immutable.
-      allow update, delete: if false;
+        // An authenticated user can create a review
+        allow create: if request.auth != null;
+
+        // Reviews cannot be updated or deleted by users to maintain integrity
+        allow update, delete: if false;
     }
 
-    //
-    // `contacts` collection rules
-    //
+    // Contacts Collection (Contact form messages)
     match /contacts/{contactId} {
-        // Contact messages are write-only for users.
-        // They should only be readable from a secure admin backend/panel.
-        allow read, update, delete: if false;
+        // Nobody should be able to read contact messages from the client-side
+        allow read: if false;
         
-        // Anyone can send a contact message.
+        // Anyone can send a message
         allow create: if true;
+
+        // Cannot be updated or deleted by users
+        allow update, delete: if false;
     }
   }
 }
