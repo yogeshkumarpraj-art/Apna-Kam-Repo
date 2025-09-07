@@ -46,13 +46,18 @@ export default function PolicyPage() {
             <p>
               We do not sell, trade, or rent your personal identification information to others. We may share generic aggregated demographic information not linked to any personal identification information regarding visitors and users with our business partners, trusted affiliates and advertisers for the purposes outlined above.
             </p>
+
+            <h2>5. Sign-in Management</h2>
+            <p>
+              Our application provides administrators with the ability to manage and control the sign-in methods available to users. This includes enabling or disabling different third-party sign-in providers (e.g., Google, Facebook) to ensure the security and integrity of our platform. The management of these sign-in options is a responsibility of the site administrators and is handled in accordance with our security policies.
+            </p>
             
-            <h2>5. Changes to This Privacy Policy</h2>
+            <h2>6. Changes to This Privacy Policy</h2>
             <p>
               Apna Kam has the discretion to update this privacy policy at any time. When we do, we will revise the updated date at the top of this page. We encourage you to frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect.
             </p>
 
-            <h2>6. Contacting Us</h2>
+            <h2>7. Contacting Us</h2>
             <p>
               If you have any questions about this Privacy Policy, the practices of this site, or your dealings with this site, please contact us at yogeshkumarpraj@gmail.com.
             </p>

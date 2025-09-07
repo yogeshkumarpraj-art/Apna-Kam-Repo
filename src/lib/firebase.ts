@@ -1,4 +1,3 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
@@ -23,7 +22,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialize App Check
 if (typeof window !== "undefined") {
   const appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider('''YOUR_RECAPTCHA_SITE_KEY'''), // REPLACE WITH YOUR SITE KEY
+    provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!),
     isTokenAutoRefreshEnabled: true
   });
 }

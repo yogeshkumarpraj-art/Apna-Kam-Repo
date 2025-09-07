@@ -102,10 +102,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       </Link>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                      <SidebarMenuButton tooltip="Coming soon" disabled>
-                          <Lock />
-                          <span>Sign-in Management</span>
-                      </SidebarMenuButton>
+                      <Link href="/admin/signin" className="w-full">
+                          <SidebarMenuButton tooltip="Sign-in Management">
+                              <Lock />
+                              <span>Sign-in Management</span>
+                          </SidebarMenuButton>
+                      </Link>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                        <SidebarMenuButton tooltip="Coming soon" disabled>

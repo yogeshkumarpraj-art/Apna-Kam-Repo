@@ -38,15 +38,17 @@ export default function LoginPage() {
   const { toast } = useToast();
   
   useEffect(() => {
-    // This effect will run once when the component mounts
-    // @ts-ignore
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': (response: any) => {
-        // reCAPTCHA solved, you can proceed with phone sign-in
-      }
-    });
-  }, []);
+    if (typeof window !== 'undefined') {
+        // @ts-ignore
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'sitekey': process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+            'callback': (response: any) => {
+                // reCAPTCHA solved, you can proceed with phone sign-in
+            }
+        });
+    }
+}, []);
 
 
   const handleSendOtp = async () => {
@@ -231,5 +233,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    

@@ -32,6 +32,14 @@ npm run dev
 
 Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
 
+## Environment Variables
+
+To run this project, you will need to add a `.env.local` file to the root of your project and add the following environment variables:
+
+`NEXT_PUBLIC_RECAPTCHA_SITE_KEY='YOUR_RECAPTCHA_SITE_KEY'`
+
+Replace `'YOUR_RECAPTCHA_SITE_KEY'` with your actual reCAPTCHA site key from the Google Cloud Console.
+
 ## Available Scripts
 
 In the project directory, you can run:
