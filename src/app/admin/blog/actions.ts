@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { revalidatePath } from 'next/cache';
+import { getPostData } from '@/lib/blog';
 
 const postsDirectory = path.join(process.cwd(), 'src/posts');
 
@@ -77,4 +78,8 @@ export async function deletePost(slug: string) {
     revalidatePath('/blog');
     revalidatePath(`/blog/${slug}`);
     revalidatePath('/admin/blog');
+}
+
+export async function getPost(slug: string) {
+    return getPostData(slug, false);
 }

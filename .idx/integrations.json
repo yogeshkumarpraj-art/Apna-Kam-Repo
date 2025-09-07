@@ -1,5 +1,7 @@
 {
-  "firebase_hosting": {},
+  "firebase_hosting": {
+    "deploymentHostingUrl": "https://apna-kaushal.web.app"
+  },
   "cloud_run_deploy": {},
   "secrets_manager": {}
 }

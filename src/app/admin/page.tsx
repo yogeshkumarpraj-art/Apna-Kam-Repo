@@ -1,4 +1,6 @@
 
+export const dynamic = 'force-dynamic';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, Workflow, HandCoins, Star, Briefcase } from "lucide-react";
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";

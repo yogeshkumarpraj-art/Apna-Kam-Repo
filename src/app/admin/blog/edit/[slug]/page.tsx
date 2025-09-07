@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { updatePost } from '@/app/admin/blog/actions';
-import { getPostData, PostData } from '@/lib/blog';
+import { updatePost, getPost } from '@/app/admin/blog/actions';
+import { PostData } from '@/lib/blog';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, useParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
@@ -33,7 +33,7 @@ export default function EditPostPage() {
     const fetchPost = async () => {
       setIsLoading(true);
       try {
-        const postData = await getPostData(slug, false);
+        const postData = await getPost(slug);
         setPost(postData);
         setTitle(postData.title);
         setDescription(postData.description);
