@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ApnaKam — Find Trusted Karigars Near You</title>
+  <meta name="description" content="ApnaKam connects you with verified local karigars for plumbing, electrical, painting, cleaning and more. Book trusted workers near you." />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.png" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">
+        <img src="logo.svg" alt="ApnaKam logo" class="logo-img" />
+        <span class="brand">ApnaKam</span>
+      </div>
+      <nav class="nav">
+        <a href="#services">Services</a>
+        <a href="#how">How It Works</a>
+        <a href="#karigars">Karigars</a>
+        <a href="#contact">Contact</a>
+        <a class="btn btn-outline" href="#become">Become a Karigar</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h1>Find Trusted Karigars & Local Service Professionals Near You</h1>
+          <p>Book verified plumbers, electricians, carpenters, cleaners and more — fast, reliable, and affordable.</p>
+
+          <form id="searchForm" class="search-form" aria-label="Search services">
+            <select id="categorySelect" aria-label="Select category">
+              <option value="any">All Categories</option>
+              <option value="plumber">Plumber</option>
+              <option value="electrician">Electrician</option>
+              <option value="painter">Painter</option>
+              <option value="cleaning">Cleaning</option>
+              <option value="carpenter">Carpenter</option>
+            </select>
+            <input id="locationInput" type="search" placeholder="Enter city or 'near me' (e.g., Mumbai)" />
+            <button type="submit" class="btn btn-primary">Find a Karigar</button>
+          </form>
+
+          <div class="cta-row">
+            <a href="#become" class="btn btn-outline">Become a Karigar</a>
+            <a href="#app" class="btn btn-ghost">Download App</a>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <img src="hero.jpg" alt="Local karigar at work" />
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="how-it-works container">
+      <h2>How ApnaKam Works</h2>
+      <div class="steps">
+        <article class="step">
+          <div class="step-num">1</div>
+          <h3>Search</h3>
+          <p>Enter what you need and your location to find nearby karigars.</p>
+        </article>
+        <article class="step">
+          <div class="step-num">2</div>
+          <h3>Connect</h3>
+          <p>View profiles, ratings, and chat or call to discuss your job.</p>
+        </article>
+        <article class="step">
+          <div class="step-num">3</div>
+          <h3>Hire</h3>
+          <p>Book, pay securely, and get the job done with a satisfaction guarantee.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="services" class="services container">
+      <h2>Popular Service Categories</h2>
+      <div class="grid categories">
+        <div class="card">
+          <img src="icons/plumber.svg" alt="" />
+          <h4>Plumbing — Ghar ki Marammat</h4>
+        </div>
+        <div class="card">
+          <img src="icons/electrician.svg" alt="" />
+          <h4>Electrical — Bijli Ka Kaam</h4>
+        </div>
+        <div class="card">
+          <img src="icons/carpenter.svg" alt="" />
+          <h4>Carpentry — Furniture & Fixes</h4>
+        </div>
+        <div class="card">
+          <img src="icons/painter.svg" alt="" />
+          <h4>Painting — Ghar Paint</h4>
+        </div>
+        <div class="card">
+          <img src="icons/cleaning.svg" alt="" />
+          <h4>Cleaning — Safai</h4>
+        </div>
+        <div class="card">
+          <img src="icons/other.svg" alt="" />
+          <h4>Other Services</h4>
+        </div>
+      </div>
+    </section>
+
+    <section id="karigars" class="featured container">
+      <h2>Featured Karigars</h2>
+      <div id="karigarList" class="grid cards"></div>
+    </section>
+
+    <section id="testimonials" class="testimonials container">
+      <h2>What Customers Say</h2>
+      <div class="carousel">
+        <blockquote>
+          "Fast and trustworthy — plumber fixed our leak the same day." <cite>— Priya, Mumbai</cite>
+        </blockquote>
+        <blockquote>
+          "Easy to use and verified professionals. Recommended!" <cite>— Raj, Delhi</cite>
+        </blockquote>
+      </div>
+    </section>
+
+    <section id="app" class="app-promo container">
+      <h2>Get the ApnaKam App</h2>
+      <p>Book karigars on the go. Download the app for Android.</p>
+      <div class="app-ctas">
+        <a class="btn btn-primary" href="#">Google Play</a>
+        <div class="qr">QR</div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact" class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <h3>ApnaKam</h3>
+        <p>Connecting local workers and customers across India.</p>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <a href="#how">How it works</a>
+        <a href="#contact">Contact</a>
+        <a href="#become">Become a Karigar</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>support@apnakam.in</p>
+        <p>+91 98765 43210</p>
+      </div>
+    </div>
+    <div class="container copyright">
+      © <span id="year"></span> ApnaKam — All rights reserved.
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
